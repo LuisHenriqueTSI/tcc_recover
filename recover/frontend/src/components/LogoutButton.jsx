@@ -1,11 +1,12 @@
 // Botão de logout
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
+import { signOut } from '../services/supabaseAuth';
 
 export default function LogoutButton() {
   const navigate = useNavigate();
-  function handleLogout() {
-    localStorage.removeItem('recover_token');
+  async function handleLogout() {
+    await signOut();
     navigate('/login');
   }
   return (
