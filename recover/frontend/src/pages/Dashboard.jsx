@@ -22,14 +22,18 @@ export default function Dashboard() {
       <Card className="w-full max-w-2xl mb-8 shadow-lg border border-primary/20">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
           <h2 className="text-2xl sm:text-3xl font-heading font-bold text-primary drop-shadow">Meu Painel</h2>
-          <LogoutButton />
         </div>
         {loading ? (
-          <p className="text-neutral-dark">Carregando...</p>
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
+            <span className="ml-4 text-primary font-semibold">Carregando...</span>
+          </div>
         ) : error ? (
-          <p className="text-red-600">{error}</p>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{error}</span>
+          </div>
         ) : user ? (
-          <div className="mb-6 flex flex-col items-center">
+          <div className="mb-6 flex flex-col items-center animate-fade-in">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-white text-2xl sm:text-3xl font-bold mb-2 shadow">
               {user.email?.charAt(0).toUpperCase()}
             </div>

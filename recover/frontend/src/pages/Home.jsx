@@ -43,15 +43,20 @@ export default function Home() {
       <div className="w-full max-w-3xl mt-6">
         <h2 className="text-xl font-bold text-primary mb-2">Itens Registrados</h2>
         {loading ? (
-          <p className="text-neutral-dark">Carregando...</p>
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
+            <span className="ml-4 text-primary font-semibold">Carregando...</span>
+          </div>
         ) : error ? (
-          <p className="text-red-600">{error}</p>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{error}</span>
+          </div>
         ) : items.length === 0 ? (
           <p className="text-neutral-dark">Nenhum item registrado ainda.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {items.map(item => (
-              <Card key={item.id} className="text-left">
+            {items.map((item, idx) => (
+              <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`}}>
                 <div className="font-bold text-primary mb-1">{item.title || item.name}</div>
                 <div className="text-neutral-dark text-sm mb-2">{item.description}</div>
                 <div className="text-xs text-neutral-dark">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>

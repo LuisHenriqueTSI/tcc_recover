@@ -1,7 +1,7 @@
 
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { getUser } from './services/supabaseAuth';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LogoutButton from './components/LogoutButton';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
@@ -12,26 +12,20 @@ import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import RequireAuth from './components/RequireAuth';
+import { Navigate } from 'react-router-dom';
 import LoginSupabase from './pages/LoginSupabase';
 import RegisterSupabase from './pages/RegisterSupabase';
 
 
-function App() {
+function AppContent() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAdmin } = useAuth();
 
-  useEffect(() => {
-    getUser().then(u => {
-      setUser(u);
-      // Exemplo: checar se é admin pelo email ou custom_claims
-      if (u && (u.email === 'admin@email.com' || u.user_metadata?.role === 'admin')) {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
-    });
-  }, []);
+  function RequireAdmin({ children }) {
+    if (!user) return <Navigate to="/login" replace />;
+    if (!isAdmin) return <Navigate to="/" replace />;
+    return children;
+  }
 
   return (
     <Router>
@@ -79,6 +73,7 @@ function App() {
         <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/register-item" element={<RequireAuth><RegisterItem /></RequireAuth>} />
         <Route path="/search" element={<Search />} />
+        <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
         <Route path="/map" element={<Map />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
@@ -86,6 +81,14 @@ function App() {
         <Route path="/register" element={<RegisterSupabase />} />
       </Routes>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

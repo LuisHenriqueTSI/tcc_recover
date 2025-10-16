@@ -7,7 +7,13 @@ from app.routers.chat import router as chat_router
 from app.routers.categories import router as categories_router
 from app.routers.reports import router as reports_router
 
+from fastapi.responses import Response
+
 app = FastAPI(title='Recover - API')
+@app.get('/favicon.ico')
+def favicon():
+    # Retorna um favicon vazio para evitar 404
+    return Response(content=b"", media_type="image/x-icon")
 
 # Adiciona CORS para permitir acesso do frontend
 app.add_middleware(

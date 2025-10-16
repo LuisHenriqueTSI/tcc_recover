@@ -1,38 +1,15 @@
-import { useEffect, useState } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { getUser } from '../services/user';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const token = localStorage.getItem('recover_token');
-    if (!token) {
-      setError('Usuário não autenticado');
-      return;
-    }
-    getUser(token)
-      .then(setUser)
-      .catch(() => setError('Não foi possível carregar os dados do perfil'));
-  }, []);
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <div className="text-red-600 font-bold mb-2">{error}</div>
-        </Card>
-      </div>
-    );
-  }
+  const { user } = useAuth();
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
-          <div className="text-neutral-dark">Carregando...</div>
+          <div className="text-red-600 font-bold mb-2">Usuário não autenticado</div>
         </Card>
       </div>
     );
