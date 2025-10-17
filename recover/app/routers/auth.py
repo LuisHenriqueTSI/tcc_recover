@@ -10,10 +10,11 @@ import os
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 def get_current_user_payload(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
 	token = credentials.credentials
+	print(f"[DEBUG] Token recebido: {token}")
 	JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 	JWT_PUBLIC_KEY = os.getenv("SUPABASE_JWT_PUBLIC_KEY")
 	try:
-		payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+		payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"], options={"verify_aud": False})
 		return payload
 	except Exception:
 		if JWT_PUBLIC_KEY:

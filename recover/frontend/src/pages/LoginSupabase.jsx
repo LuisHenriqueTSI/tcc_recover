@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { signIn } from '../services/supabaseAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginSupabase() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,22 @@ export default function LoginSupabase() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, user, loading: authLoading } = useAuth();
+  const [pendingAuth, setPendingAuth] = useState(false);
+
+  // When we set pendingAuth, wait until auth finishes loading and user is present
+  useEffect(() => {
+    if (!pendingAuth) return;
+    if (authLoading) return; // still loading
+    if (user) {
+      setPendingAuth(false);
+      navigate('/dashboard');
+    } else {
+      // authentication failed or user not loaded
+      setPendingAuth(false);
+      setError('Falha ao autenticar. Tente novamente.');
+    }
+  }, [pendingAuth, authLoading, user, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -20,12 +38,20 @@ export default function LoginSupabase() {
     if (error) {
       setError(error.message);
     } else if (data?.session) {
-      navigate('/dashboard');
+      // Salva o token no localStorage
+      localStorage.setItem('recover_token', data.session.access_token);
+      // Atualiza contexto de autenticação
+      await login();
+      // wait for auth context to finish loading user
+      setPendingAuth(true);
     } else {
       setError('Login falhou. Verifique suas credenciais.');
     }
     setLoading(false);
   }
+
+  // Se já está logado, redireciona para dashboard
+  if (user) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="min-h-screen bg-neutral-light flex items-center justify-center p-4">
