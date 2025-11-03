@@ -5,6 +5,7 @@ import Button from '../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { getUser } from '../services/supabaseAuth';
+import { deleteItem } from '../services/items';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -21,6 +22,17 @@ export default function Home() {
       .finally(() => setLoading(false));
     getUser().then(u => setUser(u));
   }, []);
+
+  async function handleDelete(id) {
+    if (!confirm('Tem certeza que deseja excluir este item?')) return;
+    const token = localStorage.getItem('recover_token');
+    try {
+      await deleteItem(id, token);
+      setItems(prev => prev.filter(i => i.id !== id));
+    } catch (err) {
+      setError(err.message || 'Erro ao deletar item');
+    }
+  }
 
   return (
     <div className="min-h-screen bg-neutral-light flex flex-col items-center justify-center p-2 sm:p-4">
@@ -56,10 +68,16 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {items.map((item, idx) => (
-              <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`}}>
+              <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`} }>
                 <div className="font-bold text-primary mb-1">{item.title || item.name}</div>
                 <div className="text-neutral-dark text-sm mb-2">{item.description}</div>
                 <div className="text-xs text-neutral-dark">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
+                {user && String(user.id) === String(item.owner_id) && (
+                  <div className="mt-2 flex items-center gap-3">
+                    <button onClick={() => navigate('/register-item', { state: { item } })} className="text-sm text-primary hover:underline">Editar</button>
+                    <button onClick={() => handleDelete(item.id)} className="text-sm text-red-600 hover:underline">Excluir</button>
+                  </div>
+                )}
               </Card>
             ))}
           </div>

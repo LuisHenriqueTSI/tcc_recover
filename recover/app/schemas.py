@@ -34,7 +34,7 @@ class PublicationOut(BaseModel):
     category: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
-    owner_id: int
+    owner_id: str
     created_at: Optional[str]
     class Config:
         from_attributes = True
