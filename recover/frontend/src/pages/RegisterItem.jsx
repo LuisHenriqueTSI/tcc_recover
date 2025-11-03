@@ -14,6 +14,7 @@ export default function RegisterItem() {
   const [description, setDescription] = useState(editingItem?.description || '');
   const [category, setCategory] = useState(editingItem?.category || '');
   const [place, setPlace] = useState(editingItem?.location || '');
+  const [status, setStatus] = useState(editingItem?.status || 'lost');
   const [date, setDate] = useState(editingItem?.date || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,6 +34,7 @@ export default function RegisterItem() {
       longitude: null,
       date,
       location: place,
+      status,
     };
     try {
       if (editingItem) {
@@ -61,6 +63,13 @@ export default function RegisterItem() {
           <Input label="Descrição" required value={description} onChange={e => setDescription(e.target.value)} />
           <Input label="Categoria" required value={category} onChange={e => setCategory(e.target.value)} />
           <Input label="Localização" required value={place} onChange={e => setPlace(e.target.value)} />
+          <div>
+            <label className="block text-sm font-medium text-neutral-dark">Status</label>
+            <select value={status} onChange={e => setStatus(e.target.value)} className="mt-1 block w-full rounded border p-2">
+              <option value="lost">Perdido</option>
+              <option value="found">Encontrado</option>
+            </select>
+          </div>
           <Input label="Data" type="date" required value={date} onChange={e => setDate(e.target.value)} />
           <Button variant="primary" type="submit" disabled={loading}>{loading ? (editingItem ? 'Atualizando...' : 'Registrando...') : (editingItem ? 'Atualizar' : 'Registrar')}</Button>
         </form>

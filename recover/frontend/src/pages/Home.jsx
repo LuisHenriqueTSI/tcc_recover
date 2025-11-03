@@ -69,7 +69,12 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {items.map((item, idx) => (
               <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`} }>
-                <div className="font-bold text-primary mb-1">{item.title || item.name}</div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="font-bold text-primary">{item.title || item.name}</div>
+                  <div className={`text-xs font-semibold ${item.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {item.status === 'found' ? 'Encontrado' : 'Perdido'}
+                  </div>
+                </div>
                 <div className="text-neutral-dark text-sm mb-2">{item.description}</div>
                 <div className="text-xs text-neutral-dark">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
                 {user && String(user.id) === String(item.owner_id) && (

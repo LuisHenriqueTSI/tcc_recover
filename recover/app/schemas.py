@@ -24,6 +24,7 @@ class PublicationCreate(BaseModel):
     title: str
     description: Optional[str] = None
     category: Optional[str] = None
+    status: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
@@ -32,6 +33,7 @@ class PublicationOut(BaseModel):
     title: str
     description: Optional[str]
     category: Optional[str]
+    status: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
     owner_id: str
