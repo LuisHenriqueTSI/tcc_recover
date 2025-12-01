@@ -45,3 +45,17 @@ export async function updateItem(id, item, token) {
   }
   return response.json();
 }
+
+export async function analyzeImage(file) {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await fetch('http://localhost:8000/vision/analyze', {
+    method: 'POST',
+    body: form,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Erro ao analisar imagem');
+  }
+  return response.json();
+}

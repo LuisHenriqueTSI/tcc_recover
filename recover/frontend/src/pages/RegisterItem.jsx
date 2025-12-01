@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import { registerItem, updateItem } from '../services/items';
+import { registerItem, updateItem, analyzeImage } from '../services/items';
 
 export default function RegisterItem() {
   const location = useLocation();
@@ -16,6 +16,7 @@ export default function RegisterItem() {
   const [place, setPlace] = useState(editingItem?.location || '');
   const [status, setStatus] = useState(editingItem?.status || 'lost');
   const [date, setDate] = useState(editingItem?.date || '');
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -69,6 +70,28 @@ export default function RegisterItem() {
               <option value="lost">Perdido</option>
               <option value="found">Encontrado</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-dark">Imagem (opcional)</label>
+            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} className="mt-1" />
+            <div className="mt-2">
+              <button type="button" onClick={async () => {
+                if (!imageFile) return setError('Selecione uma imagem primeiro');
+                try {
+                  setError('');
+                  const analysis = await analyzeImage(imageFile);
+                  if (analysis.title) setTitle(analysis.title);
+                  if (analysis.description) setDescription(analysis.description);
+                  if (analysis.category) setCategory(analysis.category);
+                  if (analysis.status) setStatus(analysis.status);
+                  if (analysis.attributes && analysis.attributes.color) {
+                    setDescription(prev => (prev ? prev + '\n' : '') + 'Cores: ' + analysis.attributes.color.join(', '));
+                  }
+                } catch (err) {
+                  setError(err.message || 'Erro na análise');
+                }
+              }} className="text-sm text-primary hover:underline">Analisar imagem (Gemini)</button>
+            </div>
           </div>
           <Input label="Data" type="date" required value={date} onChange={e => setDate(e.target.value)} />
           <Button variant="primary" type="submit" disabled={loading}>{loading ? (editingItem ? 'Atualizando...' : 'Registrando...') : (editingItem ? 'Atualizar' : 'Registrar')}</Button>

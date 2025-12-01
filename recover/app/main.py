@@ -6,6 +6,7 @@ from app.routers.photos import router as photos_router
 from app.routers.chat import router as chat_router
 from app.routers.categories import router as categories_router
 from app.routers.reports import router as reports_router
+from app.routers.gemini import router as gemini_router
 
 from fastapi.responses import Response
 
@@ -29,6 +30,7 @@ app.include_router(photos_router, prefix='/photos', tags=['photos'])
 app.include_router(chat_router, prefix='/chat', tags=['chat'])
 app.include_router(categories_router, prefix='/categories', tags=['categories'])
 app.include_router(reports_router, prefix='/reports', tags=['reports'])
+app.include_router(gemini_router, prefix='/vision', tags=['vision'])
 
 @app.get("/")
 def root():

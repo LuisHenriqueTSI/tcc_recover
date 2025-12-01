@@ -1,14 +1,15 @@
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import LogoutButton from '../components/LogoutButton';
 import { getUser } from '../services/supabaseAuth';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     getUser()
@@ -39,6 +40,9 @@ export default function Dashboard() {
             </div>
             <div className="text-lg sm:text-xl font-bold text-neutral-dark">{user.name || user.email}</div>
             <div className="text-xs sm:text-sm text-neutral-dark">{user.email}</div>
+            <div className="mt-3">
+              <Button variant="secondary" onClick={() => navigate('/profile')}>Editar Perfil</Button>
+            </div>
           </div>
         ) : null}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 mb-6">

@@ -7,3 +7,6 @@ pydantic
 bcrypt
 pydantic[email]==2.2.0
 python-multipart==0.0.7
+google-auth>=2.20.0
+google-auth-httplib2
+requests

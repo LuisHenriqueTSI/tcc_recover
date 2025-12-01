@@ -34,13 +34,13 @@ function AppContent() {
           <Link to="/" className="text-2xl font-heading font-bold text-primary hover:underline">Recover</Link>
           <div className="hidden md:flex items-center gap-4">
             <Link to="/search" className="text-primary font-semibold hover:underline">Buscar</Link>
-            <Link to="/map" className="text-primary font-semibold hover:underline">Mapa</Link>
+            {/* link Mapa removido do cabeçalho: mapa agora é mostrado nos cartões de item */}
             {user && <Link to="/register-item" className="text-accent font-semibold hover:underline">Registrar Item</Link>}
           </div>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline">Dashboard</Link>}
-          {user && <Link to="/profile" className="text-primary font-semibold hover:underline">Perfil</Link>}
+          {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline">Painel</Link>}
+          {/* perfil removido do cabeçalho: o painel do usuário contém a opção de editar o perfil */}
           {user && <Link to="/chat" className="text-secondary font-semibold hover:underline">Chat</Link>}
           {user && isAdmin && <Link to="/admin" className="text-accent font-semibold hover:underline">Admin</Link>}
           {!user && <Link to="/login" className="text-secondary font-semibold hover:underline">Login</Link>}
@@ -55,10 +55,10 @@ function AppContent() {
         {menuOpen && (
           <div className="absolute top-full left-0 w-full bg-white shadow-md z-50 flex flex-col gap-2 p-4 md:hidden animate-slide-down">
             <Link to="/search" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Buscar</Link>
-            <Link to="/map" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Mapa</Link>
+            {/* link Mapa removido do menu mobile: mapa agora é mostrado nos cartões de item */}
             {user && <Link to="/register-item" className="text-accent font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Registrar Item</Link>}
-            {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Dashboard</Link>}
-            {user && <Link to="/profile" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Perfil</Link>}
+            {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Painel</Link>}
+            {/* perfil removido do menu mobile: o painel do usuário contém a opção de editar o perfil */}
             {user && <Link to="/chat" className="text-secondary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Chat</Link>}
             {user && isAdmin && <Link to="/admin" className="text-accent font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Admin</Link>}
             {!user && <Link to="/login" className="text-secondary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Login</Link>}
