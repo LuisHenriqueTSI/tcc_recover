@@ -10,12 +10,18 @@ import { deleteItem } from '../services/items';
 export default function Home() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState(null);
   const [photosMap, setPhotosMap] = useState({});
   const [mapOpen, setMapOpen] = useState({});
   const [contactModal, setContactModal] = useState({ open: false, item: null, message: '', sending: false, error: '' });
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [categories, setCategories] = useState([]);
+  const [mineOnly, setMineOnly] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:8000/publications/')
@@ -25,6 +31,40 @@ export default function Home() {
       .finally(() => setLoading(false));
     getUser().then(u => setUser(u));
   }, []);
+
+  // Atualiza lista de categorias e itens filtrados quando items mudam
+  useEffect(() => {
+    if (!items) return;
+    // extrair categorias únicas
+    const cats = Array.from(new Set(items.map(i => i.category).filter(Boolean)));
+    setCategories(cats);
+    // inicializa filteredItems
+    setFilteredItems(items);
+  }, [items]);
+
+  // Aplica filtros ao conjunto de itens
+  useEffect(() => {
+    if (!items) return setFilteredItems([]);
+    const s = search.trim().toLowerCase();
+    const filtered = items.filter(it => {
+      // filtro "meus itens"
+      if (mineOnly && user && String(it.owner_id) !== String(user.id)) return false;
+      // status
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'lost' && it.status === 'found') return false;
+        if (statusFilter === 'found' && it.status !== 'found') return false;
+      }
+      // categoria
+      if (categoryFilter !== 'all' && (it.category || '') !== categoryFilter) return false;
+      // busca por texto em título, descrição e endereço
+      if (s) {
+        const hay = `${it.title || it.name || ''} ${it.description || ''} ${it.address || ''}`.toLowerCase();
+        if (!hay.includes(s)) return false;
+      }
+      return true;
+    });
+    setFilteredItems(filtered);
+  }, [items, search, statusFilter, categoryFilter, mineOnly, user]);
 
   // Quando os items forem carregados, busque as fotos (primeira foto) para mostrar nos cards
   useEffect(() => {
@@ -105,6 +145,28 @@ export default function Home() {
       </Card>
       <div className="w-full max-w-3xl mt-6">
         <h2 className="text-xl font-bold text-primary mb-2">Itens Registrados</h2>
+        {/* Filters */}
+        <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+          <div className="flex gap-2 w-full">
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por título, descrição ou endereço" className="w-full px-3 py-2 border rounded" />
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 border rounded">
+              <option value="all">Todos</option>
+              <option value="lost">Perdidos</option>
+              <option value="found">Encontrados</option>
+            </select>
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-3 py-2 border rounded">
+              <option value="all">Todas categorias</option>
+              {categories.map(c => (
+                <option value={c} key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 mt-2 sm:mt-0">
+            <label className="text-sm flex items-center gap-2"><input type="checkbox" checked={mineOnly} onChange={e => setMineOnly(e.target.checked)} /> Meus itens</label>
+            <button className="px-3 py-2 rounded border" onClick={() => { setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setMineOnly(false); }}>Limpar</button>
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
@@ -114,21 +176,16 @@ export default function Home() {
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
             <span className="block sm:inline">{error}</span>
           </div>
-        ) : items.length === 0 ? (
-          <p className="text-neutral-dark">Nenhum item registrado ainda.</p>
+        ) : filteredItems.length === 0 ? (
+          <p className="text-neutral-dark">Nenhum item corresponde aos filtros.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {items.map((item, idx) => (
+            {filteredItems.map((item, idx) => (
               <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`} }>
                 {/* imagem (se disponível) */}
                 {photosMap[item.id] ? (
                   <div className="w-full h-40 mb-2 overflow-hidden rounded">
-                    <img
-                      src={photosMap[item.id]}
-                      alt={item.title || item.name}
-                      className="object-cover w-full h-full"
-                      onError={() => setPhotosMap(prev => ({ ...prev, [item.id]: null }))}
-                    />
+                    <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
                   </div>
                 ) : (
                   <div className="w-full h-40 mb-2 bg-neutral-100 flex items-center justify-center rounded text-neutral-dark text-sm">Sem foto</div>
