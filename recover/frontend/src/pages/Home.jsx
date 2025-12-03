@@ -162,7 +162,9 @@ export default function Home() {
             </select>
           </div>
           <div className="flex items-center gap-2 mt-2 sm:mt-0">
-            <label className="text-sm flex items-center gap-2"><input type="checkbox" checked={mineOnly} onChange={e => setMineOnly(e.target.checked)} /> Meus itens</label>
+            {user ? (
+              <label className="text-sm flex items-center gap-2"><input type="checkbox" checked={mineOnly} onChange={e => setMineOnly(e.target.checked)} /> Meus itens</label>
+            ) : null}
             <button className="px-3 py-2 rounded border" onClick={() => { setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setMineOnly(false); }}>Limpar</button>
           </div>
         </div>

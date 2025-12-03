@@ -33,7 +33,6 @@ function AppContent() {
         <div className="flex items-center gap-4">
           <Link to="/" className="text-2xl font-heading font-bold text-primary hover:underline">Recover</Link>
           <div className="hidden md:flex items-center gap-4">
-            <Link to="/search" className="text-primary font-semibold hover:underline">Buscar</Link>
             {/* link Mapa removido do cabeçalho: mapa agora é mostrado nos cartões de item */}
             {user && <Link to="/register-item" className="text-accent font-semibold hover:underline">Registrar Item</Link>}
           </div>
@@ -54,7 +53,7 @@ function AppContent() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="absolute top-full left-0 w-full bg-white shadow-md z-50 flex flex-col gap-2 p-4 md:hidden animate-slide-down">
-            <Link to="/search" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Buscar</Link>
+            {/* Buscar link removed from mobile menu */}
             {/* link Mapa removido do menu mobile: mapa agora é mostrado nos cartões de item */}
             {user && <Link to="/register-item" className="text-accent font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Registrar Item</Link>}
             {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Painel</Link>}
