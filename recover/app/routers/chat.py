@@ -20,10 +20,10 @@ class MessageOut(BaseModel):
     id: int
     sender_id: Union[int, str]
     receiver_id: Union[int, str]
-    item_id: Optional[int]
-    reply_to_id: Optional[int]
+    item_id: Optional[int] = None
+    reply_to_id: Optional[int] = None
     content: str
-    sent_at: Optional[str]
+    sent_at: Optional[str] = None
 
 # Enviar mensagem
 @router.post('/', response_model=MessageOut)
