@@ -4,6 +4,7 @@ from app.supabase_client import supabase
 from pydantic import BaseModel
 from typing import List, Union, Optional
 from postgrest.exceptions import APIError
+import logging
 
 router = APIRouter()
 
@@ -30,10 +31,40 @@ class MessageOut(BaseModel):
 def send_message(msg: MessageCreate):
     try:
         # avoid sending explicit nulls for optional fields
-        result = supabase.table("messages").insert(msg.dict(exclude_none=True)).execute()
+        payload = msg.dict(exclude_none=True)
+        logging.info("Attempting to insert message payload: %s", payload)
+        result = supabase.table("messages").insert(payload).execute()
     except APIError as e:
-        # Detect common cause: attempting to insert a UUID/string into integer column
         detail = str(e)
+        logging.error("APIError during insert: %s", repr(e))
+        # also log args for more detail
+        logging.debug("APIError args: %s", getattr(e, 'args', None))
+        # Handle missing `reply_to_id` column in DB schema (Supabase/PostgREST PGRST204)
+        if "Could not find the 'reply_to_id' column" in detail or 'PGRST204' in detail:
+            logging.warning("reply_to_id column not found in DB schema; retrying insert without it")
+            # retry without reply_to_id if it was provided
+            payload = msg.dict(exclude_none=True)
+            if 'reply_to_id' in payload:
+                payload.pop('reply_to_id')
+                logging.info("Retrying insert without 'reply_to_id'; payload: %s", payload)
+                try:
+                    result = supabase.table("messages").insert(payload).execute()
+                except APIError as e2:
+                    logging.error("Retry APIError: %s", repr(e2))
+                    raise HTTPException(status_code=400, detail=(
+                        "Erro ao salvar mensagem após remover 'reply_to_id'. "
+                        "Parece que o PostgREST/Supabase ainda não reconhece a coluna no cache de schema. "
+                        "Por favor, aplique a migração em `scripts/add_reply_to.sql` e reinicie/force o refresh do serviço PostgREST (ou aguarde alguns minutos). "
+                        f"Detalhe original: {detail}; detalhe do retry: {str(e2)}"
+                    ))
+                # success on retry
+            else:
+                # reply_to_id wasn't in payload — propagate original error
+                raise HTTPException(status_code=400, detail=(
+                    "Erro ao salvar mensagem: coluna 'reply_to_id' não existe no banco. "
+                    "Considere aplicar a migração em `scripts/add_reply_to.sql` e reiniciar o serviço PostgREST/Supabase para atualizar o cache de schema."
+                ))
+        # Detect common cause: attempting to insert a UUID/string into integer column
         if 'invalid input syntax for type integer' in detail:
             raise HTTPException(status_code=400, detail=(
                 "Erro ao salvar mensagem: seu remetente/recebedor parece ser um UUID/string, "
