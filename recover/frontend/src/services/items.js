@@ -59,3 +59,20 @@ export async function analyzeImage(file) {
   }
   return response.json();
 }
+
+// Salva registro de foto associado a um item no backend
+export async function saveItemPhoto(itemId, url, token) {
+  const response = await fetch('http://localhost:8000/photos/save-url', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ item_id: itemId, url }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Erro ao salvar foto no servidor');
+  }
+  return response.json();
+}

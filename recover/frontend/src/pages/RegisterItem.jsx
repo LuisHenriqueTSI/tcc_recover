@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import { registerItem, updateItem, analyzeImage } from '../services/items';
+import { registerItem, updateItem, analyzeImage, saveItemPhoto } from '../services/items';
+import { supabase } from '../supabaseClient';
 
 export default function RegisterItem() {
   const location = useLocation();
@@ -44,7 +45,24 @@ export default function RegisterItem() {
         // redirect back to home after update
         navigate('/');
       } else {
-        await registerItem(item, token);
+        const created = await registerItem(item, token);
+        // Se tiver imagem, envia para o Storage e registra a URL
+        if (imageFile && created && created.id) {
+          // Envia o arquivo para o backend que fará o upload usando service key
+          const form = new FormData();
+          form.append('file', imageFile);
+          const resp = await fetch(`http://localhost:8000/photos/upload-and-save/${created.id}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: form,
+          });
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.detail || 'Erro ao enviar imagem para o servidor');
+          }
+        }
         setSuccess('Item registrado com sucesso!');
         setTitle(''); setDescription(''); setCategory(''); setPlace(''); setDate('');
       }

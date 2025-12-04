@@ -50,6 +50,11 @@ class PhotoOut(BaseModel):
     class Config:
         from_attributes = True
 
+
+class PhotoCreate(BaseModel):
+    item_id: int
+    url: str
+
 # Mensagens (chat)
 class MessageOut(BaseModel):
     id: int

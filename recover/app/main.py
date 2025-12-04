@@ -39,3 +39,11 @@ def root():
 @app.get('/ping')
 def ping():
     return {'status':'ok'}
+
+
+@app.get('/debug/supabase-status')
+def supabase_status():
+    import os
+    # Não retornamos chaves — apenas informamos se a service key está configurada
+    has_service = bool(os.getenv('SUPABASE_SERVICE_KEY'))
+    return {"using_service_key": has_service}
