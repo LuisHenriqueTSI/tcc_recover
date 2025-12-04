@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
+import CancelButton from '../components/CancelButton';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -60,7 +61,10 @@ export default function Register() {
             required
           />
           {error && <div className="text-red-600 text-sm">{error}</div>}
-          <Button variant="primary" type="submit">Registrar</Button>
+          <div className="flex gap-2">
+            <Button variant="primary" type="submit">Registrar</Button>
+            <CancelButton />
+          </div>
         </form>
         <div className="mt-4 text-center">
           <Button variant="outline" onClick={() => navigate('/login')}>Já tenho conta</Button>

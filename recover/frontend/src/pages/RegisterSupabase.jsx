@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import CancelButton from '../components/CancelButton';
 import { signUp, signIn } from '../services/supabaseAuth';
 
 export default function RegisterSupabase() {
@@ -57,7 +58,10 @@ export default function RegisterSupabase() {
           <Input label="Nome" type="text" required value={name} onChange={e => setName(e.target.value)} />
           <Input label="Email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
           <Input label="Senha" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
-          <Button variant="primary" type="submit" disabled={loading}>{loading ? 'Registrando...' : 'Registrar'}</Button>
+          <div className="flex gap-2">
+            <Button variant="primary" type="submit" disabled={loading}>{loading ? 'Registrando...' : 'Registrar'}</Button>
+            <CancelButton />
+          </div>
         </form>
         {error && <div className="mt-2 text-red-600 text-sm text-center">{error}</div>}
       </Card>

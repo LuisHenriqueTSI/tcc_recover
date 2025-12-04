@@ -10,6 +10,7 @@ import Search from './pages/Search';
 import Map from './pages/Map';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
+import EditProfile from './pages/EditProfile';
 import Admin from './pages/Admin';
 import RequireAuth from './components/RequireAuth';
 import { Navigate } from 'react-router-dom';
@@ -76,6 +77,7 @@ function AppContent() {
         <Route path="/map" element={<Map />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+        <Route path="/profile/edit" element={<RequireAuth><EditProfile /></RequireAuth>} />
         <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
         <Route path="/register" element={<RegisterSupabase />} />
       </Routes>

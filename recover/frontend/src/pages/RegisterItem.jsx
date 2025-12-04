@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import CancelButton from '../components/CancelButton';
 import { registerItem, updateItem, analyzeImage, saveItemPhoto } from '../services/items';
 import { supabase } from '../supabaseClient';
 
@@ -112,7 +113,10 @@ export default function RegisterItem() {
             </div>
           </div>
           <Input label="Data" type="date" required value={date} onChange={e => setDate(e.target.value)} />
-          <Button variant="primary" type="submit" disabled={loading}>{loading ? (editingItem ? 'Atualizando...' : 'Registrando...') : (editingItem ? 'Atualizar' : 'Registrar')}</Button>
+          <div className="flex gap-2">
+            <Button variant="primary" type="submit" disabled={loading}>{loading ? (editingItem ? 'Atualizando...' : 'Registrando...') : (editingItem ? 'Atualizar' : 'Registrar')}</Button>
+            <CancelButton />
+          </div>
         </form>
         {error && <div className="mt-2 text-red-600 text-sm text-center">{error}</div>}
         {success && <div className="mt-2 text-green-600 text-sm text-center">{success}</div>}

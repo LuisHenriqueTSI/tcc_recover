@@ -1,9 +1,11 @@
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) {
     return (
@@ -24,7 +26,9 @@ export default function Profile() {
           <div className="text-lg font-bold text-neutral-dark">{user.name}</div>
           <div className="text-sm text-neutral-dark">{user.email}</div>
         </div>
-        <Button variant="secondary">Editar Perfil</Button>
+        <div className="flex justify-center">
+          <Button variant="secondary" onClick={() => navigate('/profile/edit')}>Editar Perfil</Button>
+        </div>
       </Card>
     </div>
   );
