@@ -5,6 +5,7 @@ import jwt
 import os
 import time
 from datetime import datetime
+from app.supabase_client import supabase
 
 
 
@@ -52,3 +53,47 @@ def get_me(payload: dict = Depends(get_current_user_payload)):
 	email = payload.get("email", "(email não disponível)")
 	name = payload.get("name", "Usuário")
 	return {"id": user_id, "email": email, "name": name}
+
+
+# Buscar perfil público de um usuário por id/sub
+@router.get('/users/{user_id}')
+def get_user_profile(user_id: str):
+	# tenta buscar nas tabelas de perfil (profiles) ou users no Supabase
+	try:
+		# primeiro tenta na tabela `profiles`
+		resp = supabase.table('profiles').select('id,name,full_name,display_name,email').eq('id', str(user_id)).execute()
+		if resp and getattr(resp, 'data', None):
+			row = resp.data[0]
+			# normalize name field
+			name = row.get('full_name') or row.get('display_name') or row.get('name')
+			return { 'id': row.get('id'), 'name': name or str(row.get('id')) }
+	except Exception:
+		pass
+	try:
+		# fallback: tentar tabela `users`
+		resp2 = supabase.table('users').select('id,email').eq('id', str(user_id)).execute()
+		if resp2 and getattr(resp2, 'data', None):
+			row = resp2.data[0]
+			return { 'id': row.get('id'), 'name': row.get('email') or str(row.get('id')) }
+	except Exception:
+		pass
+	# se nada encontrado, retornar id como nome
+	return { 'id': user_id, 'name': str(user_id) }
+
+
+
+# Endpoint para sincronizar/atualizar profile do usuário (exige token)
+@router.post('/sync-profile')
+def sync_profile(body: dict, payload: dict = Depends(get_current_user_payload)):
+	name = body.get('name')
+	if not name:
+		raise HTTPException(status_code=400, detail='Missing name')
+	user_sub = payload.get('sub')
+	try:
+		# usa service role key pelo supabase client configurado no backend
+		resp = supabase.table('profiles').upsert({'id': str(user_sub), 'name': name}).execute()
+		if getattr(resp, 'error', None):
+			raise Exception(resp.error)
+		return {'ok': True, 'profile': resp.data}
+	except Exception as e:
+		raise HTTPException(status_code=500, detail=f'Failed to upsert profile: {e}')

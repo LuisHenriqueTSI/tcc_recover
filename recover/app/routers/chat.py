@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.routers.auth import get_current_user_payload
 from app.supabase_client import supabase
+from app.crud_supabase import get_item
 from pydantic import BaseModel
 from typing import List, Union, Optional
 from postgrest.exceptions import APIError
@@ -20,11 +21,37 @@ class MessageCreate(BaseModel):
 class MessageOut(BaseModel):
     id: int
     sender_id: Union[int, str]
+    sender_name: Optional[str] = None
     receiver_id: Union[int, str]
     item_id: Optional[int] = None
+    item_title: Optional[str] = None
     reply_to_id: Optional[int] = None
     content: str
     sent_at: Optional[str] = None
+
+
+def _get_user_name(uid: Union[int, str]) -> Optional[str]:
+    try:
+        if uid is None:
+            return None
+        q = str(uid)
+        # try profiles table first
+        r = supabase.table('profiles').select('name,email').eq('id', q).execute()
+        if r and getattr(r, 'data', None) and len(r.data) > 0:
+            row = r.data[0]
+            if row.get('name'):
+                return row.get('name')
+            if row.get('email'):
+                return row.get('email').split('@')[0]
+        # fallback: try auth.users email
+        ru = supabase.table('users').select('email').eq('id', q).execute()
+        if ru and getattr(ru, 'data', None) and len(ru.data) > 0:
+            e = ru.data[0].get('email')
+            if e:
+                return e.split('@')[0]
+    except Exception:
+        pass
+    return None
 
 # Enviar mensagem
 @router.post('/', response_model=MessageOut)
@@ -32,6 +59,19 @@ def send_message(msg: MessageCreate):
     try:
         # avoid sending explicit nulls for optional fields
         payload = msg.dict(exclude_none=True)
+        # If this is a reply and no item_id was provided, try to inherit item_id from the replied message
+        try:
+            if payload.get('item_id') is None and payload.get('reply_to_id'):
+                rid = payload.get('reply_to_id')
+                orig = supabase.table('messages').select('*').eq('id', rid).execute()
+                if orig and getattr(orig, 'data', None):
+                    o = orig.data[0]
+                    if o and o.get('item_id'):
+                        payload['item_id'] = o.get('item_id')
+        except Exception:
+            # don't block sending if lookup fails
+            logging.debug('Failed to inherit item_id from replied message', exc_info=True)
+
         logging.info("Attempting to insert message payload: %s", payload)
         result = supabase.table("messages").insert(payload).execute()
     except APIError as e:
@@ -74,7 +114,25 @@ def send_message(msg: MessageCreate):
             ))
         raise HTTPException(status_code=400, detail=f"Erro ao salvar mensagem: {detail}")
     if result.data:
-        return result.data[0]
+        out = result.data[0]
+        # attach item title if possible to help frontend display
+        try:
+            iid = out.get('item_id')
+            if iid:
+                it = get_item(iid)
+                if it:
+                    out['item_title'] = it.get('title') or it.get('name')
+        except Exception:
+            # don't fail the request if item lookup fails; log is already handled elsewhere
+            pass
+        # attach sender name when possible
+        try:
+            sname = _get_user_name(out.get('sender_id'))
+            if sname:
+                out['sender_name'] = sname
+        except Exception:
+            pass
+        return out
     raise HTTPException(status_code=400, detail="Erro ao enviar mensagem")
 
 # Listar mensagens entre dois usuários
@@ -84,7 +142,24 @@ def list_messages(user1_id: int, user2_id: int):
         .or_(f"sender_id.eq.{user1_id},receiver_id.eq.{user2_id}")\
         .or_(f"sender_id.eq.{user2_id},receiver_id.eq.{user1_id}")\
         .execute()
-    return result.data if result.data else []
+    data = result.data if result.data else []
+    # attach item titles when available
+    try:
+        for m in data:
+            iid = m.get('item_id')
+            if iid:
+                it = get_item(iid)
+                if it:
+                    m['item_title'] = it.get('title') or it.get('name')
+            try:
+                sname = _get_user_name(m.get('sender_id'))
+                if sname:
+                    m['sender_name'] = sname
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return data
 
 
 # Mensagens envolvendo o usuário autenticado
@@ -96,7 +171,23 @@ def my_messages(payload: dict = Depends(get_current_user_payload)):
     result = supabase.table("messages").select("*")\
         .or_(f"sender_id.eq.{q},receiver_id.eq.{q}")\
         .execute()
-    return result.data if result.data else []
+    data = result.data if result.data else []
+    try:
+        for m in data:
+            iid = m.get('item_id')
+            if iid:
+                it = get_item(iid)
+                if it:
+                    m['item_title'] = it.get('title') or it.get('name')
+            try:
+                sname = _get_user_name(m.get('sender_id'))
+                if sname:
+                    m['sender_name'] = sname
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return data
 
 
 # Caixa de entrada: mensagens recebidas pelo usuário autenticado
@@ -105,4 +196,20 @@ def my_inbox(payload: dict = Depends(get_current_user_payload)):
     user_sub = payload.get('sub')
     q = f"'{user_sub}'" if isinstance(user_sub, str) and not str(user_sub).isdigit() else f"{user_sub}"
     result = supabase.table("messages").select("*").eq('receiver_id', user_sub).execute()
-    return result.data if result.data else []
+    data = result.data if result.data else []
+    try:
+        for m in data:
+            iid = m.get('item_id')
+            if iid:
+                it = get_item(iid)
+                if it:
+                    m['item_title'] = it.get('title') or it.get('name')
+            try:
+                sname = _get_user_name(m.get('sender_id'))
+                if sname:
+                    m['sender_name'] = sname
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return data

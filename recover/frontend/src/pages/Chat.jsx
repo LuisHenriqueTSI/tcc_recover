@@ -8,6 +8,7 @@ export default function Chat() {
   const [inbox, setInbox] = useState([]);
   const [loadingInbox, setLoadingInbox] = useState(false);
   const [inboxError, setInboxError] = useState('');
+  const [nameMap, setNameMap] = useState({}); // cache sender_id -> name
 
   const [message, setMessage] = useState('');
   const [receiverId, setReceiverId] = useState('');
@@ -30,7 +31,24 @@ export default function Chat() {
           throw new Error(data.detail || 'Erro ao buscar mensagens');
         }
         const json = await res.json();
-        setInbox(json || []);
+        const msgs = json || [];
+        setInbox(msgs);
+        // fetch sender names for unique sender_ids
+        const ids = Array.from(new Set(msgs.map(m => String(m.sender_id)).filter(Boolean)));
+        const missing = ids.filter(id => !nameMap[id]);
+        if (missing.length > 0) {
+          // fetch names in parallel (one request per id)
+          const fetches = missing.map(id => fetch(`http://localhost:8000/auth/users/${encodeURIComponent(id)}`)
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+          );
+          const results = await Promise.all(fetches);
+          const newMap = {};
+          results.forEach(r => {
+            if (r && r.id) newMap[String(r.id)] = r.name || String(r.id);
+          });
+          if (Object.keys(newMap).length > 0) setNameMap(prev => ({ ...prev, ...newMap }));
+        }
       } catch (e) {
         setInboxError(e.message || 'Erro');
       } finally {
@@ -50,7 +68,8 @@ export default function Chat() {
       const payload = {
         sender_id: user?.id,
         receiver_id: to,
-        item_id: itemId || null,
+        // if user didn't fill itemId but this is a reply, inherit item_id from replied message
+        item_id: itemId || (replyTo && replyTo.item_id) || null,
         content: message,
         reply_to_id: replyTo ? replyTo.id : null
       };
@@ -111,13 +130,16 @@ export default function Chat() {
               {inbox.map(m => (
                 <li key={m.id} className="border rounded p-2 bg-white">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="text-sm text-neutral-dark mb-1"><strong>De:</strong> {m.sender_id}</div>
-                      <div className="text-sm mb-1">{m.content}</div>
-                      <div className="text-xs text-neutral-dark">Relacionado ao item: {m.item_id}</div>
-                    </div>
+                          <div>
+                            <div className="text-sm text-neutral-dark mb-1"><strong>De:</strong> {m.sender_name || nameMap[String(m.sender_id)] || m.sender_id}</div>
+                            <div className="text-sm mb-1">{m.content}</div>
+                            <div className="text-xs text-neutral-dark">Relacionado ao item: {m.item_title ? m.item_title : (m.item_id || '—')}</div>
+                          </div>
                     <div className="flex-shrink-0">
-                      <button className="text-sm text-primary hover:underline" onClick={() => setReplyTo({ id: m.id, sender_id: m.sender_id, content: m.content })}>Responder</button>
+                      <button
+                        className="text-sm text-primary hover:underline"
+                        onClick={() => setReplyTo({ id: m.id, sender_id: m.sender_id, content: m.content, item_id: m.item_id, item_title: m.item_title })}
+                      >Responder</button>
                     </div>
                   </div>
                 </li>
@@ -129,7 +151,7 @@ export default function Chat() {
         <form className="flex flex-col gap-2 mt-4" onSubmit={handleSend}>
           {replyTo && (
             <div className="flex items-center justify-between bg-neutral-100 border p-2 rounded">
-              <div className="text-sm text-neutral-dark">Respondendo a <strong>{replyTo.sender_id}</strong>: "{replyTo.content.length > 80 ? replyTo.content.slice(0,80) + '...' : replyTo.content}"</div>
+              <div className="text-sm text-neutral-dark">Respondendo a <strong>{replyTo.item_title ? (replyTo.item_title) : (nameMap[String(replyTo.sender_id)] || replyTo.sender_id)}</strong>: "{replyTo.content.length > 80 ? replyTo.content.slice(0,80) + '...' : replyTo.content}"</div>
               <button type="button" className="text-sm text-red-600 hover:underline" onClick={() => setReplyTo(null)}>Cancelar</button>
             </div>
           )}
