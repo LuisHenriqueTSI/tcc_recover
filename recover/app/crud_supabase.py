@@ -21,6 +21,11 @@ def delete_item(item_id: int):
 
     Retorna os dados deletados (lista ou None) conforme o retorno do Supabase.
     """
+    # Primeiro deletar dependências que referenciam o item (por exemplo mensagens)
+    # para evitar violação da constraint de foreign key.
+    # Se preferir, configure a FK no banco com ON DELETE CASCADE (ver notas abaixo).
+    supabase.table("messages").delete().eq("item_id", item_id).execute()
+
     response = supabase.table("items").delete().eq("id", item_id).execute()
     return response.data
 
