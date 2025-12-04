@@ -13,6 +13,7 @@ export default function Chat() {
   const [receiverId, setReceiverId] = useState('');
   const [itemId, setItemId] = useState('');
   const [sending, setSending] = useState(false);
+  const [replyTo, setReplyTo] = useState(null); // { id, sender_id, content }
 
   useEffect(() => {
     async function loadInbox() {
@@ -41,14 +42,17 @@ export default function Chat() {
 
   async function handleSend(e) {
     e.preventDefault();
-    if (!message || !receiverId) return alert('Preencha o destinatário e a mensagem');
+    // if replying, receiverId comes from replyTo unless explicitly provided
+    const to = replyTo ? replyTo.sender_id : receiverId;
+    if (!message || !to) return alert('Preencha o destinatário e a mensagem');
     setSending(true);
     try {
       const payload = {
         sender_id: user?.id,
-        receiver_id: receiverId,
+        receiver_id: to,
         item_id: itemId || null,
-        content: message
+        content: message,
+        reply_to_id: replyTo ? replyTo.id : null
       };
       const res = await fetch('http://localhost:8000/chat/', {
         method: 'POST',
@@ -62,6 +66,7 @@ export default function Chat() {
       setMessage('');
       setReceiverId('');
       setItemId('');
+      setReplyTo(null);
       // refresh inbox
       const token = localStorage.getItem('recover_token');
       if (token) {
@@ -105,20 +110,38 @@ export default function Chat() {
             <ul className="space-y-2 h-48 overflow-y-auto p-1">
               {inbox.map(m => (
                 <li key={m.id} className="border rounded p-2 bg-white">
-                  <div className="text-sm text-neutral-dark mb-1"><strong>De:</strong> {m.sender_id}</div>
-                  <div className="text-sm mb-1">{m.content}</div>
-                  <div className="text-xs text-neutral-dark">Relacionado ao item: {m.item_id}</div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm text-neutral-dark mb-1"><strong>De:</strong> {m.sender_id}</div>
+                      <div className="text-sm mb-1">{m.content}</div>
+                      <div className="text-xs text-neutral-dark">Relacionado ao item: {m.item_id}</div>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <button className="text-sm text-primary hover:underline" onClick={() => setReplyTo({ id: m.id, sender_id: m.sender_id, content: m.content })}>Responder</button>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <form className="flex gap-2 mt-4" onSubmit={handleSend}>
-          <input value={receiverId} onChange={e => setReceiverId(e.target.value)} className="w-28 px-3 py-2 border rounded" placeholder="Destinatário ID" />
-          <input value={itemId} onChange={e => setItemId(e.target.value)} className="w-24 px-3 py-2 border rounded" placeholder="Item ID (opcional)" />
-          <input value={message} onChange={e => setMessage(e.target.value)} className="flex-1 px-3 py-2 border border-neutral-light rounded focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Digite sua mensagem..." />
-          <Button variant="primary" type="submit" disabled={sending}>{sending ? 'Enviando...' : 'Enviar'}</Button>
+        <form className="flex flex-col gap-2 mt-4" onSubmit={handleSend}>
+          {replyTo && (
+            <div className="flex items-center justify-between bg-neutral-100 border p-2 rounded">
+              <div className="text-sm text-neutral-dark">Respondendo a <strong>{replyTo.sender_id}</strong>: "{replyTo.content.length > 80 ? replyTo.content.slice(0,80) + '...' : replyTo.content}"</div>
+              <button type="button" className="text-sm text-red-600 hover:underline" onClick={() => setReplyTo(null)}>Cancelar</button>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            {!replyTo && (
+              <input value={receiverId} onChange={e => setReceiverId(e.target.value)} className="w-28 px-3 py-2 border rounded" placeholder="Destinatário ID" />
+            )}
+            <input value={itemId} onChange={e => setItemId(e.target.value)} className="w-24 px-3 py-2 border rounded" placeholder="Item ID (opcional)" />
+            <input value={message} onChange={e => setMessage(e.target.value)} className="flex-1 px-3 py-2 border border-neutral-light rounded focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Digite sua mensagem..." />
+            <Button variant="primary" type="submit" disabled={sending}>{sending ? 'Enviando...' : 'Enviar'}</Button>
+          </div>
         </form>
       </Card>
     </div>

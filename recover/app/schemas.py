@@ -55,7 +55,8 @@ class MessageOut(BaseModel):
     id: int
     sender_id: int
     receiver_id: int
-    item_id: int
+    item_id: Optional[int]
+    reply_to_id: Optional[int]
     content: str
     sent_at: Optional[str]
     class Config:

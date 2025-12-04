@@ -14,36 +14,28 @@ export default function LoginSupabase() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, user, loading: authLoading } = useAuth();
-  const [pendingAuth, setPendingAuth] = useState(false);
-
-  // When we set pendingAuth, wait until auth finishes loading and user is present
-  useEffect(() => {
-    if (!pendingAuth) return;
-    if (authLoading) return; // still loading
-    if (user) {
-      setPendingAuth(false);
-      navigate('/dashboard');
-    } else {
-      // authentication failed or user not loaded
-      setPendingAuth(false);
-      setError('Falha ao autenticar. Tente novamente.');
-    }
-  }, [pendingAuth, authLoading, user, navigate]);
+  
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError('');
     const { data, error } = await signIn(email, password);
+    console.debug('[LoginSupabase] signIn result:', { data, error });
     if (error) {
       setError(error.message);
     } else if (data?.session) {
-      // Salva o token no localStorage
-      localStorage.setItem('recover_token', data.session.access_token);
-      // Atualiza contexto de autenticação
-      await login();
-      // wait for auth context to finish loading user
-      setPendingAuth(true);
+      // Salva o token e estabelece o usuário no contexto imediatamente
+      const token = data.session.access_token;
+      const supabaseUser = data.user || null;
+      console.debug('[LoginSupabase] token and supabaseUser:', { token, supabaseUser });
+      try {
+        await login(token, supabaseUser);
+        navigate('/dashboard');
+      } catch (e) {
+        console.debug('[Login] login helper failed', e);
+        setError('Falha ao autenticar. Tente novamente.');
+      }
     } else {
       setError('Login falhou. Verifique suas credenciais.');
     }

@@ -54,10 +54,44 @@ export function AuthProvider({ children }) {
     load();
   }, [token]);
 
-  const login = async () => {
-    const t = localStorage.getItem('recover_token');
+  // Accepts optional token and user to avoid race conditions when logging in
+  const login = async (incomingToken = null, incomingUser = null) => {
+    let t = incomingToken;
+    if (!t) {
+      t = localStorage.getItem('recover_token');
+    } else {
+      // if token provided explicitly, persist it
+      try {
+        localStorage.setItem('recover_token', t);
+      } catch (e) {
+        console.debug('[Auth] could not persist token to localStorage', e);
+      }
+    }
     console.debug('[Auth] login, new token:', t);
     setToken(t);
+    if (incomingUser) {
+      console.debug('[Auth] setting incoming user immediately');
+      setUser(incomingUser);
+      return;
+    }
+
+    // If we received a token but no user object, try to load profile from backend immediately
+    if (t) {
+      try {
+        console.debug('[Auth] fetching profile with token immediately');
+        const u = await getUserProfile(t);
+        console.debug('[Auth] fetched profile on login:', u);
+        setUser(u);
+        if (u && (u.email === 'admin@email.com' || u.role === 'admin')) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (e) {
+        console.debug('[Auth] immediate profile fetch failed', e);
+        // leave user null; the effect watching `token` will still attempt to load
+      }
+    }
   };
 
   const logout = async () => {

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.routers.auth import get_current_user_payload
 from app.supabase_client import supabase
 from pydantic import BaseModel
-from typing import List, Union
+from typing import List, Union, Optional
 from postgrest.exceptions import APIError
 
 router = APIRouter()
@@ -11,22 +11,26 @@ class MessageCreate(BaseModel):
     # sender_id / receiver_id may be numeric IDs or string UUIDs depending on auth backend
     sender_id: Union[int, str]
     receiver_id: Union[int, str]
-    item_id: int
+    item_id: Optional[int] = None
+    # when replying to a message, frontend may send `reply_to_id`
+    reply_to_id: Optional[int] = None
     content: str
 
 class MessageOut(BaseModel):
     id: int
     sender_id: Union[int, str]
     receiver_id: Union[int, str]
-    item_id: int
+    item_id: Optional[int]
+    reply_to_id: Optional[int]
     content: str
-    sent_at: str
+    sent_at: Optional[str]
 
 # Enviar mensagem
 @router.post('/', response_model=MessageOut)
 def send_message(msg: MessageCreate):
     try:
-        result = supabase.table("messages").insert(msg.dict()).execute()
+        # avoid sending explicit nulls for optional fields
+        result = supabase.table("messages").insert(msg.dict(exclude_none=True)).execute()
     except APIError as e:
         # Detect common cause: attempting to insert a UUID/string into integer column
         detail = str(e)
