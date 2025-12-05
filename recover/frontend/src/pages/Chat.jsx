@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 
 export default function Chat() {
   const { user } = useAuth();
-  const [inbox, setInbox] = useState([]);
+  const [inbox, setInbox] = useState([]); // now stores todo o histórico (enviadas + recebidas)
   const [loadingInbox, setLoadingInbox] = useState(false);
   const [inboxError, setInboxError] = useState('');
   const [nameMap, setNameMap] = useState({}); // cache sender_id -> name
@@ -17,51 +17,63 @@ export default function Chat() {
   const [replyTo, setReplyTo] = useState(null); // { id, sender_id, content }
   
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [selectedKey, setSelectedKey] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    async function loadInbox() {
-      setLoadingInbox(true);
-      setInboxError('');
-      try {
-        const token = localStorage.getItem('recover_token');
-        if (!token) throw new Error('Usuário não autenticado');
-        const res = await fetch('http://localhost:8000/chat/inbox', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || 'Erro ao buscar mensagens');
-        }
-        const json = await res.json();
-        const msgs = json || [];
-        setInbox(msgs);
-        
-        console.log('[Chat] Total messages:', msgs.length, 'Unread:', msgs.filter(m => m.read === false).length);
-        
-        // fetch sender names for unique sender_ids
-        const ids = Array.from(new Set(msgs.map(m => String(m.sender_id)).filter(Boolean)));
-        const missing = ids.filter(id => !nameMap[id]);
-        if (missing.length > 0) {
-          // fetch names in parallel (one request per id)
-          const fetches = missing.map(id => fetch(`http://localhost:8000/auth/users/${encodeURIComponent(id)}`)
-            .then(r => r.ok ? r.json() : null)
-            .catch(() => null)
-          );
-          const results = await Promise.all(fetches);
-          const newMap = {};
-          results.forEach(r => {
-            if (r && r.id) newMap[String(r.id)] = r.name || String(r.id);
-          });
-          if (Object.keys(newMap).length > 0) setNameMap(prev => ({ ...prev, ...newMap }));
-        }
-      } catch (e) {
-        setInboxError(e.message || 'Erro');
-      } finally {
-        setLoadingInbox(false);
+  // Busca inbox completa (enviadas + recebidas) e preenche nomes
+  const loadInbox = async () => {
+    setLoadingInbox(true);
+    setInboxError('');
+    try {
+      const token = localStorage.getItem('recover_token');
+      if (!token) throw new Error('Usuário não autenticado');
+      const res = await fetch('http://localhost:8000/chat/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Erro ao buscar mensagens');
       }
+      const json = await res.json();
+      const msgs = json || [];
+      // fetch nomes de participantes (remetente e destinatário)
+      const ids = Array.from(new Set([
+        ...msgs.map(m => String(m.sender_id)).filter(Boolean),
+        ...msgs.map(m => String(m.receiver_id)).filter(Boolean)
+      ]));
+      const missing = ids.filter(id => !nameMap[id]);
+      if (missing.length > 0) {
+        const fetches = missing.map(id => fetch(`http://localhost:8000/auth/users/${encodeURIComponent(id)}`)
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null)
+        );
+        const results = await Promise.all(fetches);
+        const newMap = {};
+        results.forEach(r => {
+          if (r && r.id) {
+            const emailName = r.email ? r.email.split('@')[0] : null;
+            newMap[String(r.id)] = r.name || emailName || 'Usuário';
+          }
+        });
+        if (Object.keys(newMap).length > 0) setNameMap(prev => ({ ...prev, ...newMap }));
+      }
+      // sempre enrich com nomes disponíveis (payload ou cache) para evitar cair em ID
+      const enrichedMsgs = msgs.map(m => ({
+        ...m,
+        sender_name: m.sender_name || nameMap[String(m.sender_id)] || 'Usuário',
+        receiver_name: m.receiver_name || nameMap[String(m.receiver_id)] || 'Usuário',
+      }));
+      setInbox(enrichedMsgs);
+      console.log('[Chat] Total messages:', msgs.length, 'Unread:', msgs.filter(m => m.read === false).length);
+    } catch (e) {
+      setInboxError(e.message || 'Erro');
+    } finally {
+      setLoadingInbox(false);
     }
+  };
+
+  useEffect(() => {
     if (user) loadInbox();
   }, [user]);
 
@@ -98,7 +110,7 @@ export default function Chat() {
   async function handleSend(e) {
     e.preventDefault();
     // if replying, receiverId comes from replyTo unless explicitly provided
-    const to = selectedConversation?.sender_id || replyTo?.sender_id || receiverId;
+    const to = selectedConversation?.other_id || selectedConversation?.sender_id || replyTo?.sender_id || receiverId;
     if (!message || !to) return alert('Preencha o destinatário e a mensagem');
     setSending(true);
     try {
@@ -119,6 +131,7 @@ export default function Chat() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.detail || 'Erro ao enviar mensagem');
       }
+      const saved = await res.json();
       setMessage('');
       // Don't clear receiverId or itemId when in a conversation
       if (!selectedConversation) {
@@ -126,15 +139,27 @@ export default function Chat() {
         setItemId('');
       }
       setReplyTo(null);
-      // refresh inbox
-      const token = localStorage.getItem('recover_token');
-      if (token) {
-        const r2 = await fetch('http://localhost:8000/chat/inbox', { headers: { Authorization: `Bearer ${token}` } });
-        if (r2.ok) {
-          const j = await r2.json();
-          setInbox(j || []);
-        }
+      // otimista: adiciona a mensagem enviada na lista atual (com nomes enriquecidos)
+      const enrichedSaved = {
+        ...saved,
+        sender_name: saved.sender_name || nameMap[String(saved.sender_id)] || 'Usuário',
+        receiver_name: saved.receiver_name || nameMap[String(saved.receiver_id)] || 'Usuário',
+      };
+      setInbox(prev => [...prev, enrichedSaved]);
+      // se a conversa atual está aberta, atualiza sua lista de mensagens
+      if (selectedKey) {
+        setSelectedConversation(prev => {
+          if (!prev) return prev;
+          const isMine = String(saved.sender_id) === String(user?.id);
+          const otherId = isMine ? saved.receiver_id : saved.sender_id;
+          const key = `${otherId}-${saved.item_id || 'general'}`;
+          if (key !== selectedKey) return prev;
+          const msgs = [...(prev.messages || []), enrichedSaved].sort((a, b) => new Date(a.created_at || a.sent_at || a.inserted_at || 0) - new Date(b.created_at || b.sent_at || b.inserted_at || 0));
+          return { ...prev, messages: msgs, lastMessage: enrichedSaved };
+        });
       }
+      // refresh histórico completo em segundo plano
+      loadInbox();
       // Scroll to bottom
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     } catch (e) {
@@ -144,12 +169,63 @@ export default function Chat() {
     }
   }
 
+  async function markConversationAsRead(conv) {
+    if (!conv || !user) return;
+    const token = localStorage.getItem('recover_token');
+    if (!token) return;
+    const unread = (conv.messages || []).filter(m => String(m.receiver_id) === String(user.id) && m.read === false);
+    if (unread.length === 0) return;
+    try {
+      await Promise.all(unread.map(async (m) => {
+        try {
+          await fetch(`http://localhost:8000/chat/${m.id}/mark-read`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (err) {
+          console.error('[Chat] Failed to mark message as read:', err);
+        }
+      }));
+      const now = new Date().toISOString();
+      setInbox(prev => prev.map(m => unread.find(u => u.id === m.id) ? { ...m, read: true, read_at: now } : m));
+      window.dispatchEvent(new CustomEvent('messages-read'));
+    } catch (e) {
+      console.error('[Chat] Error marking conversation read:', e);
+    }
+  }
+
   const handleSelectConversation = (msg) => {
     setSelectedConversation(msg);
-    handleMarkAsRead(msg);
-    setReceiverId(msg.sender_id);
+    const key = `${msg.other_id || msg.sender_id}-${msg.item_id || 'general'}`;
+    setSelectedKey(key);
+    // marcar como lidas as mensagens recebidas nessa conversa
+    markConversationAsRead(msg);
+    setReceiverId(msg.other_id || msg.sender_id);
     setItemId(msg.item_id || '');
   };
+
+  // Re-sincroniza a conversa selecionada após atualizar inbox
+  useEffect(() => {
+    if (!selectedKey || !user) return;
+    const convMap = {};
+    inbox.forEach(m => {
+      const isMine = String(m.sender_id) === String(user.id);
+      const otherId = isMine ? m.receiver_id : m.sender_id;
+      const key = `${otherId}-${m.item_id || 'general'}`;
+      if (!convMap[key]) {
+        convMap[key] = { ...m, other_id: otherId, messages: [m], lastMessage: m, unreadCount: (!isMine && m.read === false) ? 1 : 0 };
+      } else {
+        convMap[key].messages.push(m);
+        const msgDate = new Date(m.created_at || m.sent_at || m.inserted_at || 0);
+        const lastDate = new Date(convMap[key].lastMessage.created_at || convMap[key].lastMessage.sent_at || convMap[key].lastMessage.inserted_at || 0);
+        if (msgDate > lastDate) convMap[key].lastMessage = m;
+        if (!isMine && m.read === false) convMap[key].unreadCount++;
+      }
+    });
+    if (convMap[selectedKey]) {
+      setSelectedConversation(convMap[selectedKey]);
+    }
+  }, [inbox, selectedKey, user]);
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -184,30 +260,35 @@ export default function Chat() {
            itemTitle.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  // Group messages by conversation (sender_id + item_id)
+  // Group messages by conversation (outro participante + item_id)
   const conversations = {};
   filteredInbox.forEach(msg => {
-    const key = `${msg.sender_id}-${msg.item_id || 'general'}`;
+    const isMine = String(msg.sender_id) === String(user?.id);
+    const otherId = isMine ? msg.receiver_id : msg.sender_id;
+    const key = `${otherId}-${msg.item_id || 'general'}`;
     if (!conversations[key]) {
       conversations[key] = {
         ...msg,
+        other_id: otherId,
         messages: [msg],
         lastMessage: msg,
-        unreadCount: msg.read === false ? 1 : 0
+        unreadCount: (!isMine && msg.read === false) ? 1 : 0
       };
     } else {
       conversations[key].messages.push(msg);
-      if (new Date(msg.created_at) > new Date(conversations[key].lastMessage.created_at)) {
+      const msgDate = new Date(msg.created_at || msg.sent_at || msg.inserted_at || 0);
+      const lastDate = new Date(conversations[key].lastMessage.created_at || conversations[key].lastMessage.sent_at || conversations[key].lastMessage.inserted_at || 0);
+      if (msgDate > lastDate) {
         conversations[key].lastMessage = msg;
       }
-      if (msg.read === false) {
+      if (!isMine && msg.read === false) {
         conversations[key].unreadCount++;
       }
     }
   });
 
   const conversationList = Object.values(conversations).sort((a, b) => 
-    new Date(b.lastMessage.created_at) - new Date(a.lastMessage.created_at)
+    new Date(b.lastMessage.created_at || b.lastMessage.sent_at || b.lastMessage.inserted_at || 0) - new Date(a.lastMessage.created_at || a.lastMessage.sent_at || a.lastMessage.inserted_at || 0)
   );
 
   if (!user) {
@@ -231,7 +312,17 @@ export default function Chat() {
           {/* Conversations Panel */}
           <aside className="flex flex-col bg-panel-dark border-r border-white/10 overflow-y-auto">
             <div className="p-4 border-b border-white/10">
-              <h2 className="text-lg font-semibold text-text-primary-dark mb-4">Mensagens</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-text-primary-dark">Mensagens</h2>
+                <button
+                  onClick={loadInbox}
+                  className="flex items-center gap-1 text-sm text-primary hover:text-primary/80"
+                  title="Atualizar"
+                >
+                  <span className="material-symbols-outlined text-base">refresh</span>
+                  Atualizar
+                </button>
+              </div>
               <label className="flex flex-col w-full">
                 <div className="flex w-full flex-1 items-stretch rounded-lg h-11">
                   <div className="text-text-secondary-dark flex bg-background-dark items-center justify-center pl-3.5 rounded-l-lg border-r-0">
@@ -255,12 +346,15 @@ export default function Chat() {
               ) : conversationList.length === 0 ? (
                 <div className="text-text-secondary-dark text-center py-8">Nenhuma mensagem</div>
               ) : (
-                conversationList.map((conv, idx) => (
+                conversationList.map((conv, idx) => {
+                  const otherId = conv.other_id || conv.sender_id;
+                  const displayName = conv.sender_name || conv.receiver_name || nameMap[String(otherId)] || 'Usuário';
+                  return (
                   <a
                     key={idx}
                     onClick={() => handleSelectConversation(conv)}
                     className={`flex gap-4 px-4 py-3 justify-between rounded-lg cursor-pointer transition-colors ${
-                      selectedConversation?.sender_id === conv.sender_id && selectedConversation?.item_id === conv.item_id
+                      selectedConversation && selectedConversation.item_id === conv.item_id && selectedConversation.other_id === (conv.other_id || conv.sender_id)
                         ? 'bg-primary/20 hover:bg-primary/30'
                         : 'hover:bg-white/10'
                     }`}
@@ -269,12 +363,12 @@ export default function Chat() {
                       <div 
                         className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shrink-0" 
                         style={{ 
-                          backgroundImage: `url("https://ui-avatars.com/api/?name=${encodeURIComponent(conv.sender_name || nameMap[String(conv.sender_id)] || 'U')}&background=3B82F6&color=fff")` 
+                          backgroundImage: `url("https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3B82F6&color=fff")` 
                         }}
                       />
                       <div className="flex flex-1 flex-col justify-center overflow-hidden">
                         <p className="text-text-primary-dark text-base font-medium leading-normal truncate">
-                          {conv.sender_name || nameMap[String(conv.sender_id)] || `Usuário ${conv.sender_id}`}
+                          {displayName}
                         </p>
                         <p className="text-text-secondary-dark text-sm font-normal leading-normal truncate">
                           Item: {conv.item_title || conv.item_id || 'Sem item'}
@@ -286,7 +380,7 @@ export default function Chat() {
                     </div>
                     <div className="shrink-0 flex flex-col items-end justify-between">
                       <p className="text-text-secondary-dark text-xs font-normal">
-                        {formatTime(conv.lastMessage.created_at)}
+                        {formatTime(conv.lastMessage.created_at || conv.lastMessage.sent_at)}
                       </p>
                       {conv.unreadCount > 0 && (
                         <div className="flex size-5 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
@@ -295,7 +389,7 @@ export default function Chat() {
                       )}
                     </div>
                   </a>
-                ))
+                )})
               )}
             </nav>
           </aside>
@@ -315,7 +409,7 @@ export default function Chat() {
                     />
                     <div>
                       <h3 className="font-semibold text-text-primary-dark">
-                        {selectedConversation.sender_name || nameMap[String(selectedConversation.sender_id)] || `Usuário ${selectedConversation.sender_id}`}
+                        {selectedConversation.sender_name || selectedConversation.receiver_name || nameMap[String(selectedConversation.other_id)] || nameMap[String(selectedConversation.sender_id)] || 'Usuário'}
                       </h3>
                       <a className="text-sm text-primary hover:underline cursor-pointer">
                         Item: {selectedConversation.item_title || selectedConversation.item_id || 'Sem item'}
@@ -329,7 +423,10 @@ export default function Chat() {
 
                 {/* Messages Area */}
                 <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-                  {selectedConversation.messages.map((msg, idx) => {
+                  {selectedConversation.messages
+                    .slice()
+                    .sort((a, b) => new Date(a.created_at || a.sent_at || a.inserted_at || 0) - new Date(b.created_at || b.sent_at || b.inserted_at || 0))
+                    .map((msg, idx) => {
                     const isMyMessage = msg.sender_id === user?.id;
                     
                     return (
@@ -338,7 +435,7 @@ export default function Chat() {
                           <div 
                             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end" 
                             style={{ 
-                              backgroundImage: `url("https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name || nameMap[String(msg.sender_id)] || 'U')}&background=3B82F6&color=fff")` 
+                              backgroundImage: `url("https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name || nameMap[String(msg.sender_id)] || 'Usuário')}&background=3B82F6&color=fff")` 
                             }}
                           />
                         )}
@@ -353,7 +450,7 @@ export default function Chat() {
                             </p>
                           </div>
                           <span className={`text-xs text-text-secondary-dark ${isMyMessage ? 'pr-1' : 'pl-1'}`}>
-                            {formatMessageTime(msg.created_at)}
+                            {formatMessageTime(msg.created_at || msg.sent_at)}
                           </span>
                         </div>
                       </div>

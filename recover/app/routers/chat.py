@@ -168,10 +168,9 @@ def list_messages(user1_id: int, user2_id: int):
 @router.get('/me', response_model=List[MessageOut])
 def my_messages(payload: dict = Depends(get_current_user_payload)):
     user_sub = payload.get('sub')
-    # Postgrest expects string values quoted; detect numeric vs string
-    q = f"'{user_sub}'" if isinstance(user_sub, str) and not str(user_sub).isdigit() else f"{user_sub}"
+    # Busca mensagens onde o usuário é remetente ou destinatário (inclui histórico completo)
     result = supabase.table("messages").select("*")\
-        .or_(f"sender_id.eq.{q},receiver_id.eq.{q}")\
+        .or_(f"sender_id.eq.{user_sub},receiver_id.eq.{user_sub}")\
         .execute()
     data = result.data if result.data else []
     try:

@@ -10,6 +10,8 @@ export default function Profile() {
   const [publishedItems, setPublishedItems] = useState([]);
   const [resolvedItems, setResolvedItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('published');
+  const [photosMap, setPhotosMap] = useState({});
 
   useEffect(() => {
     if (user) {
@@ -27,9 +29,6 @@ export default function Profile() {
   async function fetchUserItems() {
     try {
       const token = localStorage.getItem('recover_token');
-      console.clear();
-      console.log('[Profile] ===== FETCHING USER ITEMS =====');
-      console.log('[Profile] Fetching user items with token:', token ? 'present' : 'missing');
       
       if (!token) {
         console.error('[Profile] Token não disponível');
@@ -39,37 +38,52 @@ export default function Profile() {
 
       // Usar o novo endpoint /my-items que requer autenticação
       const url = 'http://localhost:8000/publications/my-items';
-      console.log('[Profile] URL:', url);
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      console.log('[Profile] Response status:', response.status);
-      
       if (response.ok) {
         const userItems = await response.json();
-        console.log('[Profile] User items received:', userItems);
-        console.log('[Profile] Total items:', userItems.length);
         
         // Separar em publicados (ativos) e resolvidos
         const published = userItems.filter(item => !item.resolved);
         const resolved = userItems.filter(item => item.resolved);
         
-        console.log('[Profile] Published:', published.length, 'Resolved:', resolved.length);
-        
         setPublishedItems(published);
         setResolvedItems(resolved);
+        fetchPhotosForItems(userItems);
       } else {
-        console.error('[Profile] Response not OK:', response.status);
         const errorText = await response.text();
-        console.error('[Profile] Error:', errorText);
+        console.error('[Profile] Response not OK:', response.status, errorText);
       }
     } catch (error) {
       console.error('[Profile] Erro ao buscar itens:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchPhotosForItems(items) {
+    if (!items || items.length === 0) {
+      setPhotosMap({});
+      return;
+    }
+    try {
+      const entries = await Promise.all(items.map(async (it) => {
+        try {
+          const res = await fetch(`http://localhost:8000/photos/${it.id}`);
+          if (!res.ok) return [it.id, null];
+          const data = await res.json();
+          return [it.id, Array.isArray(data) && data.length > 0 ? data[0] : null];
+        } catch {
+          return [it.id, null];
+        }
+      }));
+      setPhotosMap(Object.fromEntries(entries));
+    } catch {
+      setPhotosMap({});
     }
   }
 
@@ -114,174 +128,132 @@ export default function Profile() {
     window.open(url, '_blank');
   };
 
-  const hasSocialMedia = user.instagram || user.twitter || user.facebook || user.linkedin || user.whatsapp || user.phone;
+  const itemsForTab = activeTab === 'published' ? publishedItems : resolvedItems;
+  const itemsCount = itemsForTab.length;
+
+  const renderItemCard = (item) => {
+    const photoUrl = photosMap[item.id];
+    return (
+      <div
+        key={item.id}
+        onClick={() => navigate(`/item/${item.id}`)}
+        className="flex flex-col gap-2 pb-2 cursor-pointer"
+      >
+        <div
+          className="w-full bg-center bg-no-repeat aspect-[5/6] bg-cover rounded-lg border border-white/5"
+          style={{ backgroundImage: photoUrl ? `url(${photoUrl})` : 'linear-gradient(135deg, #1f2937, #111827)' }}
+        />
+        <div>
+          <p className="text-white text-sm font-semibold leading-normal truncate">{item.title}</p>
+          <p className="text-text-secondary-dark text-xs leading-normal">{item.item_type === 'lost' ? 'Perdido' : 'Encontrado'}</p>
+          <p className="text-text-secondary-dark text-xs leading-normal">Status: {item.resolved ? 'Resolvido' : 'Ativo'}</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background-dark">
       <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          {/* Card Principal do Perfil */}
-          <div className="bg-surface-dark rounded-2xl overflow-hidden border border-white/10 mb-6">
-            {/* Seção do Avatar e Informações */}
-            <div className="bg-gradient-to-br from-primary/20 to-secondary/20 p-8 text-center">
-              <div className="relative inline-block mb-4">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8962e] flex items-center justify-center shadow-2xl ring-4 ring-primary/30">
-                  <span className="text-6xl text-white">👤</span>
+        <div className="px-4 sm:px-8 md:px-16 lg:px-24 py-6">
+          <div className="max-w-5xl mx-auto flex flex-col gap-8">
+            {/* Header do perfil */}
+            <div className="bg-surface-dark/80 border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col items-center gap-6 text-center">
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-2 border-primary" style={{ backgroundImage: user?.avatar ? `url(${user.avatar})` : 'linear-gradient(135deg,#1f2937,#0f172a)' }} />
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-white text-[22px] font-bold leading-tight tracking-tight">{user.name}</p>
+                <p className="text-text-secondary-dark text-base">Membro</p>
+                <div className="flex items-center gap-4 text-text-secondary-dark mt-1 flex-wrap justify-center">
+                  <button className="flex items-center gap-1 hover:text-primary transition-colors" onClick={() => openSocialMedia('phone', user.phone || '+5511999998888')}>
+                    <span className="material-symbols-outlined text-base">call</span>
+                    <span className="text-sm">{user.phone || '+55 11 99999-8888'}</span>
+                  </button>
+                  <button className="flex items-center gap-1 hover:text-primary transition-colors" onClick={() => openSocialMedia('whatsapp', user.whatsapp || user.phone || '+5511999998888')}>
+                    <span className="material-symbols-outlined text-base">sms</span>
+                    <span className="text-sm">WhatsApp</span>
+                  </button>
                 </div>
               </div>
-              <h2 className="text-3xl font-bold text-text-primary-dark mb-2">{user.name}</h2>
-              <p className="text-text-secondary-dark mb-1">Membro</p>
-              <div className="flex items-center justify-center gap-4 text-sm text-text-secondary-dark mb-6">
-                <div className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-base">call</span>
-                  {user.phone || '+55 11 99999-8888'}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-base">chat</span>
-                  WhatsApp
-                </div>
-              </div>
-              <button 
+              <button
                 onClick={() => navigate('/profile/edit')}
-                className="px-8 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition-colors shadow-lg"
+                className="flex min-w-[84px] items-center justify-center rounded-lg h-10 px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-colors"
               >
                 Editar Perfil
               </button>
             </div>
 
-            {/* Seção de Redes Sociais */}
-            <div className="p-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Ações sociais */}
+            <div className="bg-surface-dark/80 border border-white/10 rounded-2xl p-4">
+              <div className="grid grid-cols-[repeat(auto-fit,_minmax(80px,_1fr))] gap-4">
                 <button
                   onClick={() => openSocialMedia('instagram', user.instagram || 'recover')}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                  className="flex flex-col items-center gap-2 bg-transparent py-2.5 text-center group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">language</span>
+                  <div className="rounded-full bg-white/5 group-hover:bg-primary/20 p-3.5 transition-colors">
+                    <span className="material-symbols-outlined text-white group-hover:text-primary transition-colors text-xl">link</span>
                   </div>
-                  <span className="text-sm text-text-primary-dark font-medium">Website</span>
+                  <p className="text-white text-sm font-medium leading-normal group-hover:text-primary transition-colors">Website</p>
                 </button>
 
                 <button
                   onClick={() => openSocialMedia('twitter', user.twitter || 'recover')}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                  className="flex flex-col items-center gap-2 bg-transparent py-2.5 text-center group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">alternate_email</span>
+                  <div className="rounded-full bg-white/5 group-hover:bg-primary/20 p-3.5 transition-colors">
+                    <span className="material-symbols-outlined text-white group-hover:text-primary transition-colors text-xl">alternate_email</span>
                   </div>
-                  <span className="text-sm text-text-primary-dark font-medium">Twitter</span>
+                  <p className="text-white text-sm font-medium leading-normal group-hover:text-primary transition-colors">Twitter</p>
                 </button>
 
                 <button
                   onClick={() => openSocialMedia('instagram', user.instagram || 'recover')}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                  className="flex flex-col items-center gap-2 bg-transparent py-2.5 text-center group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">photo_camera</span>
+                  <div className="rounded-full bg-white/5 group-hover:bg-primary/20 p-3.5 transition-colors">
+                    <span className="material-symbols-outlined text-white group-hover:text-primary transition-colors text-xl">photo_camera</span>
                   </div>
-                  <span className="text-sm text-text-primary-dark font-medium">Instagram</span>
+                  <p className="text-white text-sm font-medium leading-normal group-hover:text-primary transition-colors">Instagram</p>
                 </button>
 
                 <button
                   onClick={() => openSocialMedia('linkedin', user.linkedin || 'recover')}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                  className="flex flex-col items-center gap-2 bg-transparent py-2.5 text-center group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">work</span>
+                  <div className="rounded-full bg-white/5 group-hover:bg-primary/20 p-3.5 transition-colors">
+                    <span className="material-symbols-outlined text-white group-hover:text-primary transition-colors text-xl">work</span>
                   </div>
-                  <span className="text-sm text-text-primary-dark font-medium">LinkedIn</span>
+                  <p className="text-white text-sm font-medium leading-normal group-hover:text-primary transition-colors">LinkedIn</p>
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Seção de Itens Publicados e Resolvidos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-surface-dark rounded-2xl p-6 border border-white/10">
-              <h3 className="text-lg font-bold text-text-primary-dark mb-4">
-                Itens Publicados ({publishedItems.length})
-              </h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {loading ? (
-                  <p className="text-sm text-text-secondary-dark text-center py-8">Carregando...</p>
-                ) : publishedItems.length === 0 ? (
-                  <p className="text-sm text-text-secondary-dark text-center py-8">Nenhum item publicado ainda</p>
-                ) : (
-                  publishedItems.map(item => (
-                    <div 
-                      key={item.id}
-                      onClick={() => navigate(`/item/${item.id}`)}
-                      className="p-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition-all group"
-                    >
-                      <div className="flex gap-3">
-                        {item.photo_urls && item.photo_urls.length > 0 && (
-                          <img 
-                            src={item.photo_urls[0]} 
-                            alt={item.title}
-                            className="w-16 h-16 rounded-lg object-cover"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-text-primary-dark truncate group-hover:text-primary transition-colors">
-                            {item.title}
-                          </h4>
-                          <p className="text-xs text-text-secondary-dark truncate mt-1">
-                            {item.item_type === 'lost' ? '🔍 Perdido' : '✅ Encontrado'}
-                          </p>
-                          {item.location && (
-                            <p className="text-xs text-text-secondary-dark truncate mt-1">
-                              📍 {item.location}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
+            {/* Tabs */}
+            <div className="bg-surface-dark/80 border border-white/10 rounded-2xl">
+              <div className="flex border-b border-white/10 px-4 gap-8">
+                <button
+                  className={`flex flex-col items-center justify-center border-b-[3px] pb-3 pt-4 transition-colors ${activeTab === 'published' ? 'border-b-primary text-primary font-bold' : 'border-b-transparent text-text-secondary-dark hover:text-primary hover:border-primary/50'}`}
+                  onClick={() => setActiveTab('published')}
+                >
+                  <p className="text-sm font-bold leading-normal tracking-tight">Itens Publicados</p>
+                </button>
+                <button
+                  className={`flex flex-col items-center justify-center border-b-[3px] pb-3 pt-4 transition-colors ${activeTab === 'resolved' ? 'border-b-primary text-primary font-bold' : 'border-b-transparent text-text-secondary-dark hover:text-primary hover:border-primary/50'}`}
+                  onClick={() => setActiveTab('resolved')}
+                >
+                  <p className="text-sm font-bold leading-normal tracking-tight">Itens Resolvidos</p>
+                </button>
               </div>
-            </div>
 
-            <div className="bg-surface-dark rounded-2xl p-6 border border-white/10">
-              <h3 className="text-lg font-bold text-text-primary-dark mb-4">
-                Itens Resolvidos ({resolvedItems.length})
-              </h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="p-4">
                 {loading ? (
                   <p className="text-sm text-text-secondary-dark text-center py-8">Carregando...</p>
-                ) : resolvedItems.length === 0 ? (
-                  <p className="text-sm text-text-secondary-dark text-center py-8">Nenhum item resolvido ainda</p>
+                ) : itemsCount === 0 ? (
+                  <p className="text-sm text-text-secondary-dark text-center py-8">Nenhum item encontrado</p>
                 ) : (
-                  resolvedItems.map(item => (
-                    <div 
-                      key={item.id}
-                      onClick={() => navigate(`/item/${item.id}`)}
-                      className="p-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition-all group"
-                    >
-                      <div className="flex gap-3">
-                        {item.photo_urls && item.photo_urls.length > 0 && (
-                          <img 
-                            src={item.photo_urls[0]} 
-                            alt={item.title}
-                            className="w-16 h-16 rounded-lg object-cover"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-text-primary-dark truncate group-hover:text-primary transition-colors">
-                            {item.title}
-                          </h4>
-                          <p className="text-xs text-green-400 truncate mt-1">
-                            ✨ Resolvido
-                          </p>
-                          {item.location && (
-                            <p className="text-xs text-text-secondary-dark truncate mt-1">
-                              📍 {item.location}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3">
+                    {itemsForTab.map(renderItemCard)}
+                  </div>
                 )}
               </div>
             </div>
