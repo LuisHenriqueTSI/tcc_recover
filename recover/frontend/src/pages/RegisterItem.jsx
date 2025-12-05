@@ -7,21 +7,120 @@ import CancelButton from '../components/CancelButton';
 import { registerItem, updateItem, analyzeImage, saveItemPhoto } from '../services/items';
 import { supabase } from '../supabaseClient';
 
+const ITEM_TYPES = {
+  animal: {
+    label: 'Animal',
+    singular: 'animal',
+    icon: '🐾',
+    fields: {
+      breed: 'Raça',
+      color: 'Cor',
+      distinguishing_features: 'Características Distintas',
+    },
+  },
+  document: {
+    label: 'Documento',
+    singular: 'documento',
+    icon: '📄',
+    fields: {
+      document_type: 'Tipo de Documento',
+      owner_name: 'Nome do Proprietário',
+      document_number: 'Número do Documento',
+    },
+  },
+  object: {
+    label: 'Objeto',
+    singular: 'objeto',
+    icon: '📦',
+    fields: {
+      brand: 'Marca',
+      model: 'Modelo',
+      color: 'Cor',
+    },
+  },
+  electronics: {
+    label: 'Eletrônico',
+    singular: 'eletrônico',
+    icon: '📱',
+    fields: {
+      brand: 'Marca',
+      model: 'Modelo',
+      color: 'Cor',
+      serial_number: 'Número de Série',
+    },
+  },
+  jewelry: {
+    label: 'Joia/Acessório',
+    singular: 'joia',
+    icon: '💍',
+    fields: {
+      material: 'Material',
+      color: 'Cor',
+      distinguishing_marks: 'Marcas Distintivas',
+    },
+  },
+  clothing: {
+    label: 'Roupa',
+    singular: 'roupa',
+    icon: '👕',
+    fields: {
+      size: 'Tamanho',
+      color: 'Cor',
+      brand: 'Marca',
+    },
+  },
+};
+
+const FIELD_LABELS = {
+  breed: 'Raça',
+  color: 'Cor',
+  distinguishing_features: 'Características Distintas',
+  document_type: 'Tipo de Documento',
+  owner_name: 'Nome do Proprietário',
+  document_number: 'Número do Documento',
+  brand: 'Marca',
+  model: 'Modelo',
+  serial_number: 'Número de Série',
+  material: 'Material',
+  distinguishing_marks: 'Marcas Distintivas',
+  size: 'Tamanho',
+};
+
 export default function RegisterItem() {
   const location = useLocation();
   const navigate = useNavigate();
   const editingItem = location.state?.item || null;
 
+  // Primeiro step: selecionar tipo de item
+  const [itemType, setItemType] = useState(editingItem?.item_type || null);
+
+  // Form fields
   const [title, setTitle] = useState(editingItem?.title || '');
   const [description, setDescription] = useState(editingItem?.description || '');
   const [category, setCategory] = useState(editingItem?.category || '');
   const [place, setPlace] = useState(editingItem?.location || '');
   const [status, setStatus] = useState(editingItem?.status || 'lost');
-  const [date, setDate] = useState(editingItem?.date || '');
+  const [date, setDate] = useState(editingItem?.date ? editingItem.date.split('T')[0] : '');
   const [imageFile, setImageFile] = useState(null);
+
+  // Extra fields based on item type
+  const [extraFields, setExtraFields] = useState(editingItem?.extra_fields || {});
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Se editando, pula direto para o tipo (sem permitir mudar)
+  const showTypeSelection = !editingItem && !itemType;
+
+  function handleSelectType(type) {
+    setItemType(type);
+    setError('');
+  }
+
+  function handleChangeExtraField(fieldName, value) {
+    setExtraFields(prev => ({ ...prev, [fieldName]: value }));
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,10 +128,7 @@ export default function RegisterItem() {
     setError('');
     setSuccess('');
     const token = localStorage.getItem('recover_token');
-    // Build payload carefully: only include non-empty fields to avoid
-    // overwriting existing DB values with empty strings. Normalize date
-    // (from input type=date 'YYYY-MM-DD') to UTC midnight ISO so Postgres
-    // timestamptz accepts it reliably.
+
     const item = {
       title,
       description,
@@ -40,23 +136,22 @@ export default function RegisterItem() {
       latitude: null,
       longitude: null,
       status,
+      item_type: itemType,
+      extra_fields: extraFields,
     };
     if (place && place !== '') item.location = place;
     if (date && date !== '') {
-      // convert 'YYYY-MM-DD' to 'YYYY-MM-DDT00:00:00Z'
       item.date = `${date}T00:00:00Z`;
     }
+
     try {
       if (editingItem) {
         await updateItem(editingItem.id, item, token);
-        setSuccess('Item atualizado com sucesso!');
-        // redirect back to home after update
+        setSuccess('Alterado com sucesso!');
         navigate('/');
       } else {
         const created = await registerItem(item, token);
-        // Se tiver imagem, envia para o Storage e registra a URL
         if (imageFile && created && created.id) {
-          // Envia o arquivo para o backend que fará o upload usando service key
           const form = new FormData();
           form.append('file', imageFile);
           const resp = await fetch(`http://localhost:8000/photos/upload-and-save/${created.id}`, {
@@ -71,8 +166,14 @@ export default function RegisterItem() {
             throw new Error(err.detail || 'Erro ao enviar imagem para o servidor');
           }
         }
-        setSuccess('Item registrado com sucesso!');
-        setTitle(''); setDescription(''); setCategory(''); setPlace(''); setDate('');
+        setSuccess('Registrado com sucesso!');
+        setTitle('');
+        setDescription('');
+        setCategory('');
+        setPlace('');
+        setDate('');
+        setItemType(null);
+        setExtraFields({});
       }
     } catch (err) {
       setError(err.message);
@@ -81,15 +182,51 @@ export default function RegisterItem() {
     }
   }
 
+  if (showTypeSelection) {
+    return (
+      <div className="min-h-screen bg-neutral-light flex items-center justify-center p-4">
+        <Card className="max-w-lg w-full">
+          <h2 className="text-2xl font-heading font-bold text-primary mb-6 text-center">Que tipo de item você quer registrar?</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 gap-4">
+            {Object.entries(ITEM_TYPES).map(([key, type]) => (
+              <button
+                key={key}
+                onClick={() => handleSelectType(key)}
+                className="p-4 border-2 border-neutral-light rounded-lg hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center gap-2 text-center"
+              >
+                <span className="text-3xl">{type.icon}</span>
+                <span className="text-sm font-semibold text-neutral-dark">{type.label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6">
+            <CancelButton />
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  const currentType = ITEM_TYPES[itemType];
+  const typeLabel = currentType?.label || 'Item';
+  const singularLabel = currentType?.singular || 'item';
+
   return (
     <div className="min-h-screen bg-neutral-light flex items-center justify-center p-4">
       <Card className="max-w-lg w-full">
-        <h2 className="text-2xl font-heading font-bold text-primary mb-4">{editingItem ? 'Editar Item' : 'Registrar Item'}</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-2xl font-heading font-bold text-primary">
+            {editingItem ? `Editar ${typeLabel}` : `Registrar ${typeLabel}`}
+          </h2>
+          <span className="text-2xl">{currentType?.icon}</span>
+        </div>
+
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <Input label="Nome do Item" required value={title} onChange={e => setTitle(e.target.value)} />
+          <Input label={`Nome do ${typeLabel}`} required value={title} onChange={e => setTitle(e.target.value)} />
           <Input label="Descrição" required value={description} onChange={e => setDescription(e.target.value)} />
           <Input label="Categoria" required value={category} onChange={e => setCategory(e.target.value)} />
           <Input label="Localização" required value={place} onChange={e => setPlace(e.target.value)} />
+
           <div>
             <label className="block text-sm font-medium text-neutral-dark">Status</label>
             <select value={status} onChange={e => setStatus(e.target.value)} className="mt-1 block w-full rounded border p-2">
@@ -97,31 +234,64 @@ export default function RegisterItem() {
               <option value="found">Encontrado</option>
             </select>
           </div>
+
+          <Input
+            label="Data (dd/mm/aaaa)"
+            type="date"
+            required
+            value={date}
+            onChange={e => setDate(e.target.value)}
+          />
+
+          {/* Extra fields based on item type */}
+          {currentType?.fields && Object.keys(currentType.fields).length > 0 && (
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-semibold text-neutral-dark mb-3">Informações adicionais</h3>
+              {Object.entries(currentType.fields).map(([fieldKey, fieldLabel]) => (
+                <Input
+                  key={fieldKey}
+                  label={fieldLabel}
+                  value={extraFields[fieldKey] || ''}
+                  onChange={e => handleChangeExtraField(fieldKey, e.target.value)}
+                  placeholder={`Digite a ${fieldLabel.toLowerCase()}`}
+                />
+              ))}
+            </div>
+          )}
+
           <div>
-            <label className="block text-sm font-medium text-neutral-dark">Imagem (opcional)</label>
+            <label className="block text-sm font-medium text-neutral-dark">Foto (opcional)</label>
             <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} className="mt-1" />
             <div className="mt-2">
-              <button type="button" onClick={async () => {
-                if (!imageFile) return setError('Selecione uma imagem primeiro');
-                try {
-                  setError('');
-                  const analysis = await analyzeImage(imageFile);
-                  if (analysis.title) setTitle(analysis.title);
-                  if (analysis.description) setDescription(analysis.description);
-                  if (analysis.category) setCategory(analysis.category);
-                  if (analysis.status) setStatus(analysis.status);
-                  if (analysis.attributes && analysis.attributes.color) {
-                    setDescription(prev => (prev ? prev + '\n' : '') + 'Cores: ' + analysis.attributes.color.join(', '));
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!imageFile) return setError('Selecione uma imagem primeiro');
+                  try {
+                    setError('');
+                    const analysis = await analyzeImage(imageFile);
+                    if (analysis.title) setTitle(analysis.title);
+                    if (analysis.description) setDescription(analysis.description);
+                    if (analysis.category) setCategory(analysis.category);
+                    if (analysis.status) setStatus(analysis.status);
+                    if (analysis.attributes && analysis.attributes.color) {
+                      setDescription(prev => (prev ? prev + '\n' : '') + 'Cores: ' + analysis.attributes.color.join(', '));
+                    }
+                  } catch (err) {
+                    setError(err.message || 'Erro na análise');
                   }
-                } catch (err) {
-                  setError(err.message || 'Erro na análise');
-                }
-              }} className="text-sm text-primary hover:underline">Analisar imagem (Gemini)</button>
+                }}
+                className="text-sm text-primary hover:underline"
+              >
+                Analisar foto (Gemini)
+              </button>
             </div>
           </div>
-          <Input label="Data" type="date" required value={date} onChange={e => setDate(e.target.value)} />
+
           <div className="flex gap-2">
-            <Button variant="primary" type="submit" disabled={loading}>{loading ? (editingItem ? 'Atualizando...' : 'Registrando...') : (editingItem ? 'Atualizar' : 'Registrar')}</Button>
+            <Button variant="primary" type="submit" disabled={loading}>
+              {loading ? 'Salvando...' : (editingItem ? 'Atualizar' : 'Registrar')}
+            </Button>
             <CancelButton />
           </div>
         </form>
