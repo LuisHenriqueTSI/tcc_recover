@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import RecoverLogo from '../assets/recover-logo.svg';
 import NotificationBell from './NotificationBell';
 
 export default function SimpleSidebar({ onCollapseChange }) {
@@ -46,10 +47,8 @@ export default function SimpleSidebar({ onCollapseChange }) {
             onClick={() => navigate('/')}
             className="flex items-center gap-3 text-white cursor-pointer hover:opacity-80 transition"
           >
-            <div className="size-8 text-primary">
-              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
-              </svg>
+            <div className="size-10 text-primary">
+              <img src={RecoverLogo} alt="Logo Recover" className="h-10 w-10" />
             </div>
             <h2 className="text-white text-xl font-bold tracking-tighter">RECOVER</h2>
           </div>
