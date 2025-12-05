@@ -28,6 +28,8 @@ class MessageOut(BaseModel):
     reply_to_id: Optional[int] = None
     content: str
     sent_at: Optional[str] = None
+    read: Optional[bool] = False
+    read_at: Optional[str] = None
 
 
 def _get_user_name(uid: Union[int, str]) -> Optional[str]:
@@ -195,8 +197,11 @@ def my_messages(payload: dict = Depends(get_current_user_payload)):
 def my_inbox(payload: dict = Depends(get_current_user_payload)):
     user_sub = payload.get('sub')
     q = f"'{user_sub}'" if isinstance(user_sub, str) and not str(user_sub).isdigit() else f"{user_sub}"
-    result = supabase.table("messages").select("*").eq('receiver_id', user_sub).execute()
+    result = supabase.table("messages").select("id,sender_id,receiver_id,item_id,reply_to_id,content,sent_at,read,read_at").eq('receiver_id', user_sub).execute()
     data = result.data if result.data else []
+    print(f'[DEBUG] Inbox data for {user_sub}: {len(data)} messages')
+    if data:
+        print(f'[DEBUG] First message read status: {data[0].get("read")}')
     try:
         for m in data:
             iid = m.get('item_id')
@@ -213,3 +218,31 @@ def my_inbox(payload: dict = Depends(get_current_user_payload)):
     except Exception:
         pass
     return data
+
+
+# Endpoint para contar mensagens não lidas
+@router.get('/unread-count')
+def get_unread_count(payload: dict = Depends(get_current_user_payload)):
+    user_sub = payload.get('sub')
+    try:
+        result = supabase.table('messages').select('id', count='exact').eq('receiver_id', user_sub).eq('read', False).execute()
+        count = result.count if hasattr(result, 'count') else 0
+        return {'unread_count': count}
+    except Exception as e:
+        print(f'[DEBUG] Error getting unread count: {e}')
+        return {'unread_count': 0}
+
+
+# Endpoint para marcar mensagem como lida
+@router.patch('/{message_id}/mark-read')
+def mark_message_as_read(message_id: int, payload: dict = Depends(get_current_user_payload)):
+    user_sub = payload.get('sub')
+    result = supabase.table('messages').select('*').eq('id', message_id).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail='Mensagem não encontrada')
+    message = result.data[0]
+    if str(message.get('receiver_id')) != str(user_sub):
+        raise HTTPException(status_code=403, detail='Você não tem permissão')
+    from datetime import datetime
+    supabase.table('messages').update({'read': True, 'read_at': datetime.utcnow().isoformat()}).eq('id', message_id).execute()
+    return {'detail': 'Mensagem marcada como lida'}

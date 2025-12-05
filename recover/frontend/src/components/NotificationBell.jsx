@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getPendingNotificationItems, markItemAsResolved } from '../services/statistics';
+import { useUnreadMessages } from '../hooks/useUnreadMessages';
 
 export default function NotificationBell() {
   const [pendingItems, setPendingItems] = useState([]);
   const [dismissedItems, setDismissedItems] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { unreadCount } = useUnreadMessages();
 
   useEffect(() => {
     checkPendingItems();
@@ -65,7 +67,7 @@ export default function NotificationBell() {
     }
   }
 
-  const notificationCount = pendingItems.length;
+  const notificationCount = pendingItems.length + unreadCount;
 
   return (
     <div className="relative">
@@ -121,6 +123,24 @@ export default function NotificationBell() {
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
+                {/* Mensagens não lidas */}
+                {unreadCount > 0 && (
+                  <div className="p-4 bg-blue-50 hover:bg-blue-100 cursor-pointer" onClick={() => { window.location.href = '/chat'; setIsOpen(false); }}>
+                    <div className="flex items-start gap-2">
+                      <span className="text-2xl">💬</span>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-primary mb-1">
+                          {unreadCount === 1 ? 'Nova mensagem' : `${unreadCount} novas mensagens`}
+                        </h4>
+                        <p className="text-sm text-neutral-dark">
+                          Clique para ver suas mensagens
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Itens pendentes de resolução */}
                 {pendingItems.map(item => (
                   <div key={item.id} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start gap-2 mb-3">
