@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { getUser } from '../services/supabaseAuth';
+import { markItemAsResolved } from '../services/statistics';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -12,6 +13,7 @@ export default function Dashboard() {
   const [recentItems, setRecentItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [resolvingItemId, setResolvingItemId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +59,25 @@ export default function Dashboard() {
     }
     loadCounts();
   }, [user]);
+
+  async function handleResolveItem(itemId) {
+    if (!confirm('Confirma que este item foi devolvido/resolvido?')) {
+      return;
+    }
+
+    setResolvingItemId(itemId);
+    const token = localStorage.getItem('recover_token');
+    const { data, error } = await markItemAsResolved(itemId, token);
+    
+    if (error) {
+      alert(error.message || 'Erro ao marcar item como resolvido');
+    } else {
+      alert('Item marcado como resolvido com sucesso! 🎉');
+      // Recarregar a lista de itens
+      window.location.reload();
+    }
+    setResolvingItemId(null);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 flex flex-col items-center p-2 sm:p-4 md:p-6">
@@ -105,12 +126,32 @@ export default function Dashboard() {
         {recentItems && recentItems.length > 0 ? (
           <ul className="space-y-2">
             {recentItems.map(it => (
-              <li key={it.id} className="border rounded p-2 bg-white flex justify-between items-center">
-                <div>
-                  <div className="font-semibold">{it.title || it.name || `Item ${it.id}`}</div>
-                  <div className="text-xs text-neutral-dark">{it.location || it.place || ''}</div>
+              <li key={it.id} className="border rounded p-3 bg-white">
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex-1">
+                    <div className="font-semibold">{it.title || it.name || `Item ${it.id}`}</div>
+                    <div className="text-xs text-neutral-dark">{it.location || it.place || ''}</div>
+                    <div className="text-sm text-neutral-dark mt-1">
+                      {it.resolved ? (
+                        <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
+                          ✓ Resolvido
+                        </span>
+                      ) : (
+                        <span className="text-orange-600">{it.status || 'Pendente'}</span>
+                      )}
+                    </div>
+                  </div>
+                  {!it.resolved && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleResolveItem(it.id)}
+                      disabled={resolvingItemId === it.id}
+                      className="text-xs py-1 px-3 whitespace-nowrap"
+                    >
+                      {resolvingItemId === it.id ? 'Marcando...' : 'Marcar como Resolvido'}
+                    </Button>
+                  )}
                 </div>
-                <div className="text-sm text-neutral-dark">{it.status}</div>
               </li>
             ))}
           </ul>

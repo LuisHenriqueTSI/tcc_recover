@@ -30,6 +30,17 @@ class PublicationCreate(BaseModel):
     location: Optional[str] = None
     date: Optional[str] = None
 
+class PublicationUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    status: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    location: Optional[str] = None
+    date: Optional[str] = None
+    resolved: Optional[bool] = None
+
 class PublicationOut(BaseModel):
     id: int
     title: str
@@ -42,6 +53,8 @@ class PublicationOut(BaseModel):
     date: Optional[str]
     owner_id: str
     created_at: Optional[str]
+    resolved: Optional[bool] = False
+    resolved_at: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -87,3 +100,12 @@ class ReportOut(BaseModel):
     created_at: Optional[str]
     class Config:
         from_attributes = True
+
+# Estatísticas
+class CategoryStats(BaseModel):
+    category: str
+    count: int
+
+class Statistics(BaseModel):
+    total_resolved: int
+    by_category: List[CategoryStats]

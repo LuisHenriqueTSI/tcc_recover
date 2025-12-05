@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LogoutButton from './components/LogoutButton';
+import ItemResolutionNotification from './components/ItemResolutionNotification';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import RegisterItem from './pages/RegisterItem';
@@ -81,6 +82,8 @@ function AppContent() {
         <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
         <Route path="/register" element={<RegisterSupabase />} />
       </Routes>
+      {/* Notificação de resolução de itens - aparece apenas para usuários autenticados */}
+      {user && <ItemResolutionNotification />}
     </Router>
   );
 }

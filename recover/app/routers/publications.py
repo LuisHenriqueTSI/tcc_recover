@@ -2,7 +2,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 import os
 from app import schemas
-from app.crud_supabase import create_item, get_all_items, delete_item, get_item, get_items_by_owner, update_items_owner, update_item
+from app.supabase_client import supabase
+from app.crud_supabase import (
+    create_item, get_all_items, delete_item, get_item, 
+    get_items_by_owner, update_items_owner, update_item,
+    mark_item_as_resolved, get_statistics, get_items_pending_notification
+)
 from app.routers.auth import get_current_user_payload
 from typing import List
 
@@ -28,7 +33,45 @@ def list_publications():
     return items if items else []
 
 
-# Rota para obter uma publicação pelo id (pública)
+# Endpoint de diagnóstico - verificar se o campo resolved existe (ANTES de /{item_id})
+@router.get('/debug/check-resolved-field')
+def check_resolved_field():
+    """Endpoint de debug para verificar se o campo resolved existe"""
+    try:
+        response = supabase.table("items").select("id, title, created_at, resolved, resolved_at").limit(5).execute()
+        return {"status": "ok", "message": "Campo resolved existe", "sample_data": response.data}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# Endpoint para obter estatísticas de itens resolvidos (público) (ANTES de /{item_id})
+@router.get('/stats/resolved', response_model=schemas.Statistics)
+def get_resolved_statistics():
+    stats = get_statistics()
+    return stats
+
+
+# Endpoint para obter itens pendentes de notificação (requer autenticação) (ANTES de /{item_id})
+@router.get('/pending-notification', response_model=List[schemas.PublicationOut])
+def get_pending_notification_items(payload: dict = Depends(get_current_user_payload)):
+    owner_sub = payload.get("sub")
+    print(f"[DEBUG] Checking pending items for user: {owner_sub}")
+    items = get_items_pending_notification(str(owner_sub), minutes_threshold=1)
+    print(f"[DEBUG] Found {len(items) if items else 0} pending items")
+    if items:
+        for item in items:
+            print(f"[DEBUG] Item {item.get('id')}: created_at={item.get('created_at')}, resolved={item.get('resolved')}")
+    return items if items else []
+
+
+# Endpoint para pré-visualizar quais itens seriam migrados (ANTES de /{item_id})
+@router.get('/migrate-preview', response_model=List[schemas.PublicationOut])
+def migrate_preview(placeholder: str = '1', payload: dict = Depends(get_current_user_payload)):
+    items = get_items_by_owner(str(placeholder))
+    return items if items else []
+
+
+# Rota para obter uma publicação pelo id (pública) - DEPOIS das rotas específicas
 @router.get('/{item_id}', response_model=schemas.PublicationOut)
 def get_publication(item_id: int):
     item = get_item(item_id)
@@ -83,13 +126,6 @@ def update_publication(item_id: int, publication: schemas.PublicationCreate, pay
     return result[0] if isinstance(result, list) else result
 
 
-# Endpoint para pré-visualizar quais itens seriam migrados do placeholder para o seu sub
-@router.get('/migrate-preview', response_model=List[schemas.PublicationOut])
-def migrate_preview(placeholder: str = '1', payload: dict = Depends(get_current_user_payload)):
-    items = get_items_by_owner(str(placeholder))
-    return items if items else []
-
-
 # Endpoint para migrar owner_id = placeholder para o sub do usuário autenticado
 @router.post('/migrate-owner')
 def migrate_owner(placeholder: str = '1', payload: dict = Depends(get_current_user_payload)):
@@ -102,3 +138,30 @@ def migrate_owner(placeholder: str = '1', payload: dict = Depends(get_current_us
     migrated_count = len(result) if result else 0
     migrated_ids = [r.get('id') for r in result] if result else []
     return {"detail": f"{migrated_count} itens migrados", "migrated": migrated_count, "migrated_ids": migrated_ids}
+
+
+# Endpoint para marcar um item como resolvido (devolvido ao dono)
+@router.patch('/{item_id}/resolve')
+def resolve_publication(item_id: int, payload: dict = Depends(get_current_user_payload)):
+    # Busca o item e verifica existência
+    item = get_item(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item não encontrado")
+
+    owner_sub = payload.get("sub")
+    # Verifica se o usuário é o dono do item
+    if str(item.get("owner_id")) != str(owner_sub):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Você não tem permissão para marcar este item como resolvido"
+        )
+
+    # Verifica se já está resolvido
+    if item.get("resolved"):
+        raise HTTPException(status_code=400, detail="Este item já foi marcado como resolvido")
+
+    result = mark_item_as_resolved(item_id)
+    if not result:
+        raise HTTPException(status_code=500, detail="Erro ao marcar item como resolvido")
+    
+    return {"detail": "Item marcado como resolvido", "item": result[0] if isinstance(result, list) else result}
