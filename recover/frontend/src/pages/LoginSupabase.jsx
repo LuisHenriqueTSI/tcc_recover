@@ -31,7 +31,7 @@ export default function LoginSupabase() {
       console.debug('[LoginSupabase] token and supabaseUser:', { token, supabaseUser });
       try {
         await login(token, supabaseUser);
-        navigate('/dashboard');
+        navigate('/');
       } catch (e) {
         console.debug('[Login] login helper failed', e);
         setError('Falha ao autenticar. Tente novamente.');
@@ -42,8 +42,8 @@ export default function LoginSupabase() {
     setLoading(false);
   }
 
-  // Se já está logado, redireciona para dashboard
-  if (user) return <Navigate to="/dashboard" replace />;
+  // Se já está logado, redireciona para home
+  if (user) return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen bg-neutral-light flex items-center justify-center p-4">

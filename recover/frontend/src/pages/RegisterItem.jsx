@@ -167,13 +167,7 @@ export default function RegisterItem() {
           }
         }
         setSuccess('Registrado com sucesso!');
-        setTitle('');
-        setDescription('');
-        setCategory('');
-        setPlace('');
-        setDate('');
-        setItemType(null);
-        setExtraFields({});
+        setTimeout(() => navigate('/'), 1500);
       }
     } catch (err) {
       setError(err.message);
