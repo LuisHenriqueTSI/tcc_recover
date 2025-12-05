@@ -1,5 +1,4 @@
 
-
 import Card from '../components/Card'
 import Button from '../components/Button'
 import ShareButton from '../components/ShareButton'
@@ -7,10 +6,12 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { deleteItem } from '../services/items';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { darkMode } = useTheme();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,25 +154,25 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-light flex flex-col items-center justify-center p-2 sm:p-4">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-neutral-light'} flex flex-col items-center justify-center p-2 sm:p-4`}>
       <Card className="w-full max-w-xl text-center">
         {/* Apenas um botão para registrar item (se usuário logado vai para /register-item, caso contrário para /login) */}
         <div className="flex flex-col gap-2 mb-4">
           <Button variant="primary" onClick={() => navigate(user ? '/register-item' : '/login')}>Registrar Item</Button>
         </div>
       </Card>
-      <div className="w-full max-w-3xl mt-6">
-        <h2 className="text-xl font-bold text-primary mb-2">Itens Registrados</h2>
+      <div className="w-full max-w-full px-8 mt-6">
+        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-primary'} mb-2`}>Itens Registrados</h2>
         {/* Filters */}
         <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
           <div className="flex gap-2 w-full">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por título, descrição ou endereço" className="w-full px-3 py-2 border rounded" />
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 border rounded">
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por título, descrição ou endereço" className={`w-full px-3 py-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600 placeholder-gray-400' : 'bg-white text-black border-gray-300'}`} />
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={`px-3 py-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}>
               <option value="all">Todos</option>
               <option value="lost">Perdidos</option>
               <option value="found">Encontrados</option>
             </select>
-            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-3 py-2 border rounded">
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={`px-3 py-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}>
               <option value="all">Todas categorias</option>
               {categories.map(c => (
                 <option value={c} key={c}>{c}</option>
@@ -180,40 +181,40 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2 mt-2 sm:mt-0">
             {user ? (
-              <label className="text-sm flex items-center gap-2"><input type="checkbox" checked={mineOnly} onChange={e => setMineOnly(e.target.checked)} /> Meus itens</label>
+              <label className={`text-sm flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><input type="checkbox" checked={mineOnly} onChange={e => setMineOnly(e.target.checked)} /> Meus itens</label>
             ) : null}
-            <button className="px-3 py-2 rounded border" onClick={() => { setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setMineOnly(false); }}>Limpar</button>
+            <button className={`px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 text-white border-gray-600 hover:bg-gray-600' : 'bg-white text-black border-gray-300 hover:bg-gray-100'}`} onClick={() => { setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setMineOnly(false); }}>Limpar</button>
           </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
-            <span className="ml-4 text-primary font-semibold">Carregando...</span>
+            <span className={`ml-4 font-semibold ${darkMode ? 'text-white' : 'text-primary'}`}>Carregando...</span>
           </div>
         ) : error ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
             <span className="block sm:inline">{error}</span>
           </div>
         ) : filteredItems.length === 0 ? (
-          <p className="text-neutral-dark">Nenhum item corresponde aos filtros.</p>
+          <p className={darkMode ? 'text-gray-300' : 'text-neutral-dark'}>Nenhum item corresponde aos filtros.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
             {filteredItems.map((item, idx) => (
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
                 className="cursor-pointer"
               >
-                <Card className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in flex flex-col h-96 hover:shadow-lg`} style={{animationDelay: `${idx * 80}ms`} }>
+                <Card className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in flex flex-col h-[36rem] hover:shadow-lg`} style={{animationDelay: `${idx * 80}ms`} }>
                   {/* imagem (se disponível) com botão compartilhar */}
                   <div className="relative flex-shrink-0">
                     {photosMap[item.id] ? (
-                      <div className="w-full h-40 mb-2 overflow-hidden rounded">
+                      <div className="w-full h-72 mb-2 overflow-hidden rounded">
                         <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
                       </div>
                     ) : (
-                      <div className="w-full h-40 mb-2 bg-neutral-100 flex items-center justify-center rounded text-neutral-dark text-sm">Sem foto</div>
+                      <div className={`w-full h-72 mb-2 ${darkMode ? 'bg-gray-700' : 'bg-neutral-100'} flex items-center justify-center rounded ${darkMode ? 'text-gray-400' : 'text-neutral-dark'} text-sm`}>Sem foto</div>
                     )}
                     {/* Botão compartilhar no canto superior direito */}
                     <div className="absolute top-2 right-2" onClick={e => e.stopPropagation()}>
@@ -224,14 +225,14 @@ export default function Home() {
                 {/* Conteúdo com altura fixa e scroll */}
                 <div className="flex-grow overflow-hidden flex flex-col">
                   <div className="flex items-center justify-between mb-1 flex-shrink-0">
-                    <div className="font-bold text-primary truncate">{item.title || item.name}</div>
+                    <div className={`font-bold ${darkMode ? 'text-white' : 'text-primary'} truncate`}>{item.title || item.name}</div>
                     <div className={`text-xs font-semibold flex-shrink-0 ml-2 ${item.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
                       {item.status === 'found' ? 'Encontrado' : 'Perdido'}
                     </div>
                   </div>
                   
                   {/* Descrição com "Ver mais" */}
-                  <div className={`text-neutral-dark text-sm mb-2 ${!expandedCards[item.id] ? 'line-clamp-2' : ''}`}>
+                  <div className={`text-sm mb-2 ${!expandedCards[item.id] ? 'line-clamp-2' : ''} ${darkMode ? 'text-gray-300' : 'text-neutral-dark'}`}>
                     {item.description}
                   </div>
                   
@@ -244,8 +245,8 @@ export default function Home() {
                     </button>
                   )}
                   
-                  <div className="text-xs text-neutral-dark mb-1 flex-shrink-0">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
-                  <div className="text-xs text-neutral-dark mb-2 flex-shrink-0 truncate">
+                  <div className={`text-xs mb-1 flex-shrink-0 ${darkMode ? 'text-gray-400' : 'text-neutral-dark'}`}>{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
+                  <div className={`text-xs mb-2 flex-shrink-0 truncate ${darkMode ? 'text-gray-400' : 'text-neutral-dark'}`}>
                     {item.address ? (
                       <span>{item.address}</span>
                     ) : item.latitude && item.longitude ? (
@@ -377,11 +378,11 @@ export default function Home() {
       {/* Modal de detalhes do item */}
       {selectedItem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-screen overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-screen overflow-y-auto`} onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div className="mb-6 pb-4 border-b-2 border-neutral-light">
+            <div className={`mb-6 pb-4 border-b-2 ${darkMode ? 'border-gray-700' : 'border-neutral-light'}`}>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-primary">{selectedItem.title || selectedItem.name}</h2>
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-primary'}`}>{selectedItem.title || selectedItem.name}</h2>
                 <button
                   onClick={() => setSelectedItem(null)}
                   className="text-2xl hover:text-red-500 transition"

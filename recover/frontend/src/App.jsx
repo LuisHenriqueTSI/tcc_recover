@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
 import LogoutButton from './components/LogoutButton';
 import NotificationBell from './components/NotificationBell';
 import { useUnreadMessages } from './hooks/useUnreadMessages';
@@ -25,6 +26,7 @@ function AppContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, isAdmin } = useAuth();
   const { unreadCount } = useUnreadMessages();
+  const { darkMode } = useTheme();
   
   console.log('[App] unreadCount:', unreadCount, 'user:', user?.email);
 
@@ -36,15 +38,15 @@ function AppContent() {
 
   return (
     <Router>
-      <nav className="bg-white shadow px-6 py-3 flex items-center justify-between relative">
+      <nav className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} shadow px-6 py-3 flex items-center justify-between relative`}>
         <div className="flex items-center gap-4">
           <Link to={user ? "/home" : "/"} className="text-2xl font-heading font-bold text-primary hover:underline">Recover</Link>
           <div className="hidden md:flex items-center gap-4">
-            {user && <Link to="/register-item" className="text-accent font-semibold hover:underline">Registrar Item</Link>}
+            {user && <Link to="/register-item" className={`${darkMode ? 'text-gray-200' : 'text-accent'} font-semibold hover:underline`}>Registrar Item</Link>}
           </div>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline">Painel</Link>}
+          {user && <Link to="/dashboard" className={`${darkMode ? 'text-gray-200' : 'text-primary'} font-semibold hover:underline`}>Painel</Link>}
           {user && (
             <Link to="/chat" className="text-secondary font-semibold hover:underline relative">
               Chat
