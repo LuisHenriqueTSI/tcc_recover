@@ -55,8 +55,13 @@ def save_photo_url(photo: schemas.PhotoCreate, payload: dict = Depends(get_curre
 # Listar fotos de um item
 @router.get('/{item_id}', response_model=List[str])
 def list_photos(item_id: int):
-    result = supabase.table("item_photos").select("url").eq("item_id", item_id).execute()
-    return [r["url"] for r in result.data] if result.data else []
+    try:
+        result = supabase.table("item_photos").select("url").eq("item_id", item_id).execute()
+        return [r["url"] for r in result.data] if result.data else []
+    except Exception as e:
+        print(f"Erro ao listar fotos do item {item_id}: {str(e)}")
+        # Retorna lista vazia em caso de erro de conexão
+        return []
 
 
 @router.post('/upload-and-save/{item_id}')

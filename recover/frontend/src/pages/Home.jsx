@@ -2,6 +2,7 @@
 
 import Card from '../components/Card'
 import Button from '../components/Button'
+import ShareButton from '../components/ShareButton'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { deleteItem } from '../services/items';
@@ -22,6 +23,7 @@ export default function Home() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [categories, setCategories] = useState([]);
   const [mineOnly, setMineOnly] = useState(false);
+  const [ownerSocialMedia, setOwnerSocialMedia] = useState({});
 
   useEffect(() => {
     fetch('http://localhost:8000/publications/')
@@ -100,6 +102,20 @@ export default function Home() {
       setItems(prev => prev.filter(i => i.id !== id));
     } catch (err) {
       setError(err.message || 'Erro ao deletar item');
+    }
+  }
+
+  // Buscar redes sociais do proprietário do item
+  async function loadOwnerSocialMedia(userId) {
+    if (ownerSocialMedia[userId]) return; // já foi carregado
+    try {
+      const res = await fetch(`http://localhost:8000/auth/users/${userId}/social-media`);
+      if (res.ok) {
+        const data = await res.json();
+        setOwnerSocialMedia(prev => ({ ...prev, [userId]: data }));
+      }
+    } catch (err) {
+      console.debug('Erro ao buscar redes sociais do proprietário:', err);
     }
   }
 
@@ -183,14 +199,20 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {filteredItems.map((item, idx) => (
               <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`} }>
-                {/* imagem (se disponível) */}
-                {photosMap[item.id] ? (
-                  <div className="w-full h-40 mb-2 overflow-hidden rounded">
-                    <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
+                {/* imagem (se disponível) com botão compartilhar */}
+                <div className="relative">
+                  {photosMap[item.id] ? (
+                    <div className="w-full h-40 mb-2 overflow-hidden rounded">
+                      <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
+                    </div>
+                  ) : (
+                    <div className="w-full h-40 mb-2 bg-neutral-100 flex items-center justify-center rounded text-neutral-dark text-sm">Sem foto</div>
+                  )}
+                  {/* Botão compartilhar no canto superior direito */}
+                  <div className="absolute top-2 right-2">
+                    <ShareButton item={item} />
                   </div>
-                ) : (
-                  <div className="w-full h-40 mb-2 bg-neutral-100 flex items-center justify-center rounded text-neutral-dark text-sm">Sem foto</div>
-                )}
+                </div>
                 <div className="flex items-center justify-between mb-1">
                   <div className="font-bold text-primary">{item.title || item.name}</div>
                   <div className={`text-xs font-semibold ${item.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
@@ -281,19 +303,40 @@ export default function Home() {
                   </div>
                 ) : null}
                 {user && String(user.id) === String(item.owner_id) && (
-                  <div className="mt-2 flex items-center gap-3">
-                    <button onClick={() => navigate('/register-item', { state: { item } })} className="text-sm text-primary hover:underline">Editar</button>
-                    <button onClick={() => handleDelete(item.id)} className="text-sm text-red-600 hover:underline">Excluir</button>
+                  <div className="mt-4 flex gap-2 flex-wrap items-center">
+                    <button onClick={() => navigate('/register-item', { state: { item } })} className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg">
+                      <span>✏️</span>
+                      <span>Editar</span>
+                    </button>
+                    <button onClick={() => handleDelete(item.id)} className="inline-flex items-center gap-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg">
+                      <span>🗑️</span>
+                      <span>Excluir</span>
+                    </button>
                   </div>
                 )}
                 {user && String(user.id) !== String(item.owner_id) && (
-                  <div className="mt-2">
-                    <button onClick={() => setContactModal({ open: true, item, message: '', sending: false, error: '' })} className="text-sm text-accent hover:underline">Entrar em contato com o proprietário</button>
+                  <div className="mt-4 flex gap-2 flex-wrap">
+                    <button 
+                      onClick={() => {
+                        loadOwnerSocialMedia(item.owner_id);
+                        setContactModal({ open: true, item, message: '', sending: false, error: '' });
+                      }} 
+                      className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
+                    >
+                      <span>💬</span>
+                      <span>Contato</span>
+                    </button>
                   </div>
                 )}
                 {!user && (
-                  <div className="mt-2">
-                    <button onClick={() => navigate('/login')} className="text-sm text-accent hover:underline">Entrar em contato com o proprietário</button>
+                  <div className="mt-4 flex gap-2 flex-wrap">
+                    <button 
+                      onClick={() => navigate('/login')} 
+                      className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
+                    >
+                      <span>💬</span>
+                      <span>Entrar para Contatar</span>
+                    </button>
                   </div>
                 )}
               </Card>
@@ -303,15 +346,154 @@ export default function Home() {
       </div>
       {/* Contact modal */}
       {contactModal.open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow p-4 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-2">Mensagem ao proprietário</h3>
-            <div className="text-sm text-neutral-dark mb-2">Item: {contactModal.item?.title || contactModal.item?.name}</div>
-            <textarea value={contactModal.message} onChange={e => setContactModal(prev => ({ ...prev, message: e.target.value }))} className="w-full h-32 border p-2 rounded mb-2" placeholder="Escreva sua mensagem e aguarde resposta"></textarea>
-            {contactModal.error && <div className="text-red-600 text-sm mb-2">{contactModal.error}</div>}
-            <div className="flex gap-2 justify-end">
-              <button className="px-3 py-2 rounded border" onClick={() => setContactModal({ open: false, item: null, message: '', sending: false, error: '' })}>Fechar</button>
-              <button className="px-3 py-2 rounded bg-primary text-white" onClick={sendContact} disabled={contactModal.sending}>{contactModal.sending ? 'Enviando...' : 'Enviar'}</button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-screen overflow-y-auto">
+            {/* Header */}
+            <div className="mb-6 pb-4 border-b-2 border-neutral-light">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-2xl font-bold text-primary">Contato com o Proprietário</h3>
+                <button
+                  onClick={() => setContactModal({ open: false, item: null, message: '', sending: false, error: '' })}
+                  className="text-2xl hover:text-red-500 transition"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="text-sm text-neutral-dark">
+                <span className="inline-block bg-accent/10 text-accent px-3 py-1 rounded-full">
+                  📦 {contactModal.item?.title || contactModal.item?.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Redes Sociais do Proprietário */}
+            {ownerSocialMedia[contactModal.item?.owner_id] && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl border-2 border-primary/20">
+                <div className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                  <span>📱</span>
+                  <span>Formas de Contato Direto</span>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {ownerSocialMedia[contactModal.item?.owner_id].whatsapp && (
+                    <a
+                      href={`https://wa.me/${ownerSocialMedia[contactModal.item?.owner_id].whatsapp}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <span className="text-lg">💬</span>
+                      <span className="text-xs font-semibold">WhatsApp</span>
+                    </a>
+                  )}
+                  
+                  {ownerSocialMedia[contactModal.item?.owner_id].instagram && (
+                    <a
+                      href={`https://instagram.com/${ownerSocialMedia[contactModal.item?.owner_id].instagram.replace('@', '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-lg transition shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <span className="text-lg">📷</span>
+                      <span className="text-xs font-semibold">Instagram</span>
+                    </a>
+                  )}
+                  
+                  {ownerSocialMedia[contactModal.item?.owner_id].facebook && (
+                    <a
+                      href={`https://facebook.com/${ownerSocialMedia[contactModal.item?.owner_id].facebook}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <span className="text-lg">👍</span>
+                      <span className="text-xs font-semibold">Facebook</span>
+                    </a>
+                  )}
+                  
+                  {ownerSocialMedia[contactModal.item?.owner_id].twitter && (
+                    <a
+                      href={`https://twitter.com/${ownerSocialMedia[contactModal.item?.owner_id].twitter.replace('@', '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <span className="text-lg">𝕏</span>
+                      <span className="text-xs font-semibold">Twitter</span>
+                    </a>
+                  )}
+                  
+                  {ownerSocialMedia[contactModal.item?.owner_id].phone && (
+                    <a
+                      href={`tel:${ownerSocialMedia[contactModal.item?.owner_id].phone}`}
+                      className="flex items-center gap-2 p-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <span className="text-lg">☎️</span>
+                      <span className="text-xs font-semibold">Ligação</span>
+                    </a>
+                  )}
+                  
+                  {ownerSocialMedia[contactModal.item?.owner_id].linkedin && (
+                    <a
+                      href={`https://linkedin.com/in/${ownerSocialMedia[contactModal.item?.owner_id].linkedin}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <span className="text-lg">🔗</span>
+                      <span className="text-xs font-semibold">LinkedIn</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Separador */}
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 h-px bg-neutral-light"></div>
+              <span className="text-xs text-neutral-light font-semibold">OU</span>
+              <div className="flex-1 h-px bg-neutral-light"></div>
+            </div>
+
+            {/* Chat do Sistema */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold text-primary mb-2">
+                📧 Enviar Mensagem via Chat do Sistema
+              </label>
+              <textarea
+                value={contactModal.message}
+                onChange={e => setContactModal(prev => ({ ...prev, message: e.target.value }))}
+                placeholder="Escreva sua mensagem aqui... (máximo 500 caracteres)"
+                maxLength="500"
+                className="w-full h-32 border-2 border-neutral-light p-3 rounded-lg focus:border-primary focus:outline-none resize-none text-sm"
+              />
+              <div className="text-xs text-neutral-light text-right mt-1">
+                {contactModal.message.length}/500 caracteres
+              </div>
+            </div>
+
+            {contactModal.error && (
+              <div className="mb-4 p-3 bg-red-50 border-2 border-red-200 rounded-lg text-red-700 text-sm font-semibold flex items-center gap-2">
+                <span>❌</span>
+                {contactModal.error}
+              </div>
+            )}
+
+            {/* Botões de Ação */}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setContactModal({ open: false, item: null, message: '', sending: false, error: '' })}
+                className="px-6 py-3 rounded-lg border-2 border-neutral-light hover:bg-neutral-light text-neutral-dark font-semibold transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={sendContact}
+                disabled={contactModal.sending || !contactModal.message.trim()}
+                className="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition shadow-md hover:shadow-lg transform hover:scale-105"
+              >
+                {contactModal.sending ? '⏳ Enviando...' : '✉️ Enviar Mensagem'}
+              </button>
             </div>
           </div>
         </div>

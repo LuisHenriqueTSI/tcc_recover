@@ -6,6 +6,7 @@ import os
 import time
 from datetime import datetime
 from app.supabase_client import supabase
+from app.schemas import UserSocialMediaUpdate
 
 
 
@@ -97,3 +98,55 @@ def sync_profile(body: dict, payload: dict = Depends(get_current_user_payload)):
 		return {'ok': True, 'profile': resp.data}
 	except Exception as e:
 		raise HTTPException(status_code=500, detail=f'Failed to upsert profile: {e}')
+
+
+# Endpoint para atualizar redes sociais do usuário
+@router.post('/update-social-media')
+def update_social_media(body: UserSocialMediaUpdate, payload: dict = Depends(get_current_user_payload)):
+	user_id = payload.get('sub')
+	try:
+		# Preparar dados para atualizar (apenas campos fornecidos)
+		update_data = {}
+		if body.instagram is not None:
+			update_data['instagram'] = body.instagram
+		if body.twitter is not None:
+			update_data['twitter'] = body.twitter
+		if body.whatsapp is not None:
+			update_data['whatsapp'] = body.whatsapp
+		if body.facebook is not None:
+			update_data['facebook'] = body.facebook
+		if body.linkedin is not None:
+			update_data['linkedin'] = body.linkedin
+		if body.phone is not None:
+			update_data['phone'] = body.phone
+		
+		if not update_data:
+			raise HTTPException(status_code=400, detail='Nenhum campo fornecido para atualizar')
+		
+		update_data['updated_at'] = datetime.utcnow().isoformat()
+		
+		resp = supabase.table('profiles').update(update_data).eq('id', str(user_id)).execute()
+		if getattr(resp, 'error', None):
+			raise Exception(resp.error)
+		return {'ok': True, 'data': resp.data}
+	except Exception as e:
+		raise HTTPException(status_code=500, detail=f'Erro ao atualizar redes sociais: {str(e)}')
+
+
+# Endpoint para buscar redes sociais de um usuário (público)
+@router.get('/users/{user_id}/social-media')
+def get_user_social_media(user_id: str):
+	try:
+		resp = supabase.table('profiles').select('instagram,twitter,whatsapp,facebook,linkedin,phone').eq('id', str(user_id)).execute()
+		if resp and getattr(resp, 'data', None) and len(resp.data) > 0:
+			return resp.data[0]
+		return {
+			'instagram': None,
+			'twitter': None,
+			'whatsapp': None,
+			'facebook': None,
+			'linkedin': None,
+			'phone': None
+		}
+	except Exception as e:
+		raise HTTPException(status_code=500, detail=f'Erro ao buscar redes sociais: {str(e)}')

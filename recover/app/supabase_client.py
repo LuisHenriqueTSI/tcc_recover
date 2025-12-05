@@ -19,3 +19,4 @@ else:
 	logging.getLogger().info("Supabase client: SERVICE key not found, using anon key (RLS applies)")
 
 supabase: Client = create_client(SUPABASE_URL, _key_to_use)
+

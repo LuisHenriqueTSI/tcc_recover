@@ -4,6 +4,7 @@ import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import CancelButton from '../components/CancelButton';
+import ShareButton from '../components/ShareButton';
 import { registerItem, updateItem, analyzeImage, saveItemPhoto } from '../services/items';
 import { supabase } from '../supabaseClient';
 
@@ -109,6 +110,7 @@ export default function RegisterItem() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [createdItem, setCreatedItem] = useState(null);
 
   // Se editando, pula direto para o tipo (sem permitir mudar)
   const showTypeSelection = !editingItem && !itemType;
@@ -151,6 +153,7 @@ export default function RegisterItem() {
         navigate('/home');
       } else {
         const created = await registerItem(item, token);
+        setCreatedItem(created);
         if (imageFile && created && created.id) {
           const form = new FormData();
           form.append('file', imageFile);
@@ -166,8 +169,7 @@ export default function RegisterItem() {
             throw new Error(err.detail || 'Erro ao enviar imagem para o servidor');
           }
         }
-        setSuccess('Registrado com sucesso!');
-        setTimeout(() => navigate('/home'), 1500);
+        setSuccess('Registrado com sucesso! Compartilhe agora...');
       }
     } catch (err) {
       setError(err.message);
@@ -290,8 +292,67 @@ export default function RegisterItem() {
           </div>
         </form>
         {error && <div className="mt-2 text-red-600 text-sm text-center">{error}</div>}
-        {success && <div className="mt-2 text-green-600 text-sm text-center">{success}</div>}
+        {success && !createdItem && <div className="mt-2 text-green-600 text-sm text-center">{success}</div>}
+        
+        {/* Sucesso com compartilhamento */}
+        {success && createdItem && (
+          <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-3xl">✅</span>
+              <div>
+                <div className="text-green-700 font-bold text-lg">Item Registrado com Sucesso!</div>
+                <div className="text-sm text-green-600">Compartilhe agora e maximize suas chances de encontrar!</div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg mb-4 border border-green-200">
+              <div className="text-sm font-semibold text-neutral-dark mb-2">📋 Seu Item:</div>
+              <div className="text-base font-bold text-primary">{createdItem.title}</div>
+              <div className="text-xs text-neutral-light mt-1">{createdItem.description}</div>
+            </div>
+
+            <div className="flex gap-3 flex-wrap">
+              <ShareButton item={createdItem} />
+              <Button 
+                variant="primary" 
+                onClick={() => {
+                  setSuccess('');
+                  setCreatedItem(null);
+                  setTitle('');
+                  setDescription('');
+                  setCategory('');
+                  setPlace('');
+                  setStatus('lost');
+                  setDate('');
+                  setImageFile(null);
+                  setExtraFields({});
+                  navigate('/home');
+                }}
+              >
+                🏠 Ir para Home
+              </Button>
+              <button 
+                onClick={() => {
+                  setSuccess('');
+                  setCreatedItem(null);
+                  setTitle('');
+                  setDescription('');
+                  setCategory('');
+                  setPlace('');
+                  setStatus('lost');
+                  setDate('');
+                  setImageFile(null);
+                  setExtraFields({});
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold transition"
+              >
+                ➕ Registrar Outro Item
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
 }
+

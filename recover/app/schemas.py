@@ -13,8 +13,22 @@ class UserOut(BaseModel):
     email: EmailStr
     is_active: bool
     created_at: Optional[str]
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
+    whatsapp: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    phone: Optional[str] = None
     class Config:
         from_attributes = True
+
+class UserSocialMediaUpdate(BaseModel):
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
+    whatsapp: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    phone: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
@@ -109,3 +123,12 @@ class CategoryStats(BaseModel):
 class Statistics(BaseModel):
     total_resolved: int
     by_category: List[CategoryStats]
+
+# Compartilhamento em redes sociais
+class SocialShareLinks(BaseModel):
+    """Gera URLs para compartilhamento em diferentes redes sociais"""
+    whatsapp: Optional[str] = None
+    twitter: Optional[str] = None
+    facebook: Optional[str] = None
+    telegram: Optional[str] = None
+    email: Optional[str] = None
