@@ -7,6 +7,9 @@ import { getUser } from '../services/supabaseAuth';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [itemsCount, setItemsCount] = useState(0);
+  const [messagesCount, setMessagesCount] = useState(0);
+  const [recentItems, setRecentItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -17,6 +20,43 @@ export default function Dashboard() {
       .catch(() => setError('Não foi possível carregar os dados do usuário'))
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch counts once user is available
+  useEffect(() => {
+    async function loadCounts() {
+      if (!user) return;
+      try {
+        // Fetch all publications and count those owned by the current user
+        const resp = await fetch('http://localhost:8000/publications/');
+        if (resp.ok) {
+          const all = await resp.json();
+          // owner_id may be string or number; normalize
+          const uid = String(user.id);
+          const mine = (all || []).filter(i => String(i.owner_id) === uid);
+          setItemsCount(mine.length);
+          // keep up to 6 recent items for history
+          setRecentItems(mine.slice(0, 6));
+        }
+      } catch (e) {
+        console.debug('Failed to fetch publications for dashboard', e);
+      }
+
+      try {
+        // Fetch inbox messages for the authenticated user
+        const token = localStorage.getItem('recover_token');
+        if (token) {
+          const r = await fetch('http://localhost:8000/chat/inbox', { headers: { Authorization: `Bearer ${token}` } });
+          if (r.ok) {
+            const j = await r.json();
+            setMessagesCount((j || []).length);
+          }
+        }
+      } catch (e) {
+        console.debug('Failed to fetch inbox count', e);
+      }
+    }
+    loadCounts();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 flex flex-col items-center p-2 sm:p-4 md:p-6">
@@ -48,21 +88,35 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 mb-6">
           <Card className="bg-primary/10 border border-primary/20">
             <div className="text-base sm:text-lg font-bold text-primary mb-2">Itens Registrados</div>
-            <div className="text-2xl sm:text-3xl font-heading text-primary">0</div>
+            <div className="text-2xl sm:text-3xl font-heading text-primary">{itemsCount}</div>
           </Card>
           <Card className="bg-secondary/10 border border-secondary/20">
             <div className="text-base sm:text-lg font-bold text-secondary mb-2">Mensagens</div>
-            <div className="text-2xl sm:text-3xl font-heading text-secondary">0</div>
+            <div className="text-2xl sm:text-3xl font-heading text-secondary">{messagesCount}</div>
           </Card>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
-          <Button variant="primary">Registrar Item</Button>
-          <Button variant="secondary">Ver Mensagens</Button>
+          <Button variant="primary" onClick={() => navigate('/register-item')}>Registrar Item</Button>
+          <Button variant="secondary" onClick={() => navigate('/chat')}>Ver Mensagens</Button>
         </div>
       </Card>
       <Card className="w-full max-w-2xl shadow border border-accent/20">
         <h3 className="text-lg sm:text-xl font-bold text-accent mb-2">Histórico de Itens</h3>
-        <p className="text-neutral-dark">Nenhum item registrado ainda.</p>
+        {recentItems && recentItems.length > 0 ? (
+          <ul className="space-y-2">
+            {recentItems.map(it => (
+              <li key={it.id} className="border rounded p-2 bg-white flex justify-between items-center">
+                <div>
+                  <div className="font-semibold">{it.title || it.name || `Item ${it.id}`}</div>
+                  <div className="text-xs text-neutral-dark">{it.location || it.place || ''}</div>
+                </div>
+                <div className="text-sm text-neutral-dark">{it.status}</div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-neutral-dark">Nenhum item registrado ainda.</p>
+        )}
       </Card>
     </div>
   );

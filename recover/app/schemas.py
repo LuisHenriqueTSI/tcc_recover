@@ -27,6 +27,8 @@ class PublicationCreate(BaseModel):
     status: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    location: Optional[str] = None
+    date: Optional[str] = None
 
 class PublicationOut(BaseModel):
     id: int
@@ -36,6 +38,8 @@ class PublicationOut(BaseModel):
     status: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
+    location: Optional[str]
+    date: Optional[str]
     owner_id: str
     created_at: Optional[str]
     class Config:

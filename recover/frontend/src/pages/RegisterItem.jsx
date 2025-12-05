@@ -29,16 +29,23 @@ export default function RegisterItem() {
     setError('');
     setSuccess('');
     const token = localStorage.getItem('recover_token');
+    // Build payload carefully: only include non-empty fields to avoid
+    // overwriting existing DB values with empty strings. Normalize date
+    // (from input type=date 'YYYY-MM-DD') to UTC midnight ISO so Postgres
+    // timestamptz accepts it reliably.
     const item = {
       title,
       description,
       category,
       latitude: null,
       longitude: null,
-      date,
-      location: place,
       status,
     };
+    if (place && place !== '') item.location = place;
+    if (date && date !== '') {
+      // convert 'YYYY-MM-DD' to 'YYYY-MM-DDT00:00:00Z'
+      item.date = `${date}T00:00:00Z`;
+    }
     try {
       if (editingItem) {
         await updateItem(editingItem.id, item, token);

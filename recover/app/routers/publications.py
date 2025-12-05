@@ -28,6 +28,15 @@ def list_publications():
     return items if items else []
 
 
+# Rota para obter uma publicação pelo id (pública)
+@router.get('/{item_id}', response_model=schemas.PublicationOut)
+def get_publication(item_id: int):
+    item = get_item(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item não encontrado")
+    return item
+
+
 # Rota para deletar uma publicação/item pelo id
 @router.delete('/{item_id}')
 def delete_publication(item_id: int, payload: dict = Depends(get_current_user_payload)):
