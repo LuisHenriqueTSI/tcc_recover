@@ -24,6 +24,8 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [mineOnly, setMineOnly] = useState(false);
   const [ownerSocialMedia, setOwnerSocialMedia] = useState({});
+  const [expandedCards, setExpandedCards] = useState({});
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/publications/')
@@ -198,39 +200,65 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {filteredItems.map((item, idx) => (
-              <Card key={item.id} className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in`} style={{animationDelay: `${idx * 80}ms`} }>
-                {/* imagem (se disponível) com botão compartilhar */}
-                <div className="relative">
-                  {photosMap[item.id] ? (
-                    <div className="w-full h-40 mb-2 overflow-hidden rounded">
-                      <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
+              <div
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="cursor-pointer"
+              >
+                <Card className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in flex flex-col h-96 hover:shadow-lg`} style={{animationDelay: `${idx * 80}ms`} }>
+                  {/* imagem (se disponível) com botão compartilhar */}
+                  <div className="relative flex-shrink-0">
+                    {photosMap[item.id] ? (
+                      <div className="w-full h-40 mb-2 overflow-hidden rounded">
+                        <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
+                      </div>
+                    ) : (
+                      <div className="w-full h-40 mb-2 bg-neutral-100 flex items-center justify-center rounded text-neutral-dark text-sm">Sem foto</div>
+                    )}
+                    {/* Botão compartilhar no canto superior direito */}
+                    <div className="absolute top-2 right-2" onClick={e => e.stopPropagation()}>
+                      <ShareButton item={item} />
+                  </div>
+                </div>
+                
+                {/* Conteúdo com altura fixa e scroll */}
+                <div className="flex-grow overflow-hidden flex flex-col">
+                  <div className="flex items-center justify-between mb-1 flex-shrink-0">
+                    <div className="font-bold text-primary truncate">{item.title || item.name}</div>
+                    <div className={`text-xs font-semibold flex-shrink-0 ml-2 ${item.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {item.status === 'found' ? 'Encontrado' : 'Perdido'}
                     </div>
-                  ) : (
-                    <div className="w-full h-40 mb-2 bg-neutral-100 flex items-center justify-center rounded text-neutral-dark text-sm">Sem foto</div>
+                  </div>
+                  
+                  {/* Descrição com "Ver mais" */}
+                  <div className={`text-neutral-dark text-sm mb-2 ${!expandedCards[item.id] ? 'line-clamp-2' : ''}`}>
+                    {item.description}
+                  </div>
+                  
+                  {item.description && item.description.split('\n').length > 2 && (
+                    <button
+                      onClick={() => setExpandedCards(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                      className="text-xs text-primary hover:underline mb-2 font-semibold"
+                    >
+                      {expandedCards[item.id] ? 'Ver menos' : 'Ver mais'}
+                    </button>
                   )}
-                  {/* Botão compartilhar no canto superior direito */}
-                  <div className="absolute top-2 right-2">
-                    <ShareButton item={item} />
+                  
+                  <div className="text-xs text-neutral-dark mb-1 flex-shrink-0">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
+                  <div className="text-xs text-neutral-dark mb-2 flex-shrink-0 truncate">
+                    {item.address ? (
+                      <span>{item.address}</span>
+                    ) : item.latitude && item.longitude ? (
+                      <span>Local: {Number(item.latitude).toFixed(5)}, {Number(item.longitude).toFixed(5)}</span>
+                    ) : null}
                   </div>
+                  
+                  {/* Mapa e botões no final */}
+                  <div className="flex-grow" />
                 </div>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="font-bold text-primary">{item.title || item.name}</div>
-                  <div className={`text-xs font-semibold ${item.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
-                    {item.status === 'found' ? 'Encontrado' : 'Perdido'}
-                  </div>
-                </div>
-                <div className="text-neutral-dark text-sm mb-2">{item.description}</div>
-                <div className="text-xs text-neutral-dark">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
-                {/* Mostrar endereço (se houver) ou coordenadas; botão para visualizar no mapa */}
-                <div className="text-sm text-neutral-dark mt-1 mb-2">
-                  {item.address ? (
-                    <span>{item.address}</span>
-                  ) : item.latitude && item.longitude ? (
-                    <span>Local: {Number(item.latitude).toFixed(5)}, {Number(item.longitude).toFixed(5)}</span>
-                  ) : null}
-                </div>
+                
                 {(item.latitude && item.longitude) || item.address ? (
-                  <div className="mb-2">
+                  <div className="mb-2 flex-shrink-0">
                     <button
                       onClick={async () => {
                         // Se já está aberto, fechar
@@ -340,10 +368,175 @@ export default function Home() {
                   </div>
                 )}
               </Card>
+              </div>
             ))}
           </div>
         )}
       </div>
+      
+      {/* Modal de detalhes do item */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-screen overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="mb-6 pb-4 border-b-2 border-neutral-light">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold text-primary">{selectedItem.title || selectedItem.name}</h2>
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="text-2xl hover:text-red-500 transition"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className={`text-sm font-semibold ${selectedItem.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
+                {selectedItem.status === 'found' ? '✅ Encontrado' : '🔍 Perdido'}
+              </div>
+            </div>
+
+            {/* Foto */}
+            {photosMap[selectedItem.id] && (
+              <div className="mb-4 rounded overflow-hidden">
+                <img src={photosMap[selectedItem.id]} alt={selectedItem.title} className="w-full object-cover max-h-96" />
+              </div>
+            )}
+
+            {/* Conteúdo */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <h3 className="font-semibold text-neutral-dark mb-1">Descrição</h3>
+                <p className="text-neutral-dark whitespace-pre-wrap">{selectedItem.description || 'Sem descrição'}</p>
+              </div>
+
+              {selectedItem.address && (
+                <div>
+                  <h3 className="font-semibold text-neutral-dark mb-1">Endereço</h3>
+                  <p className="text-neutral-dark">{selectedItem.address}</p>
+                </div>
+              )}
+
+              {selectedItem.category && (
+                <div>
+                  <h3 className="font-semibold text-neutral-dark mb-1">Categoria</h3>
+                  <p className="text-neutral-dark">{selectedItem.category}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="font-semibold text-neutral-dark mb-1">Data de Registro</h3>
+                <p className="text-neutral-dark">{selectedItem.created_at ? new Date(selectedItem.created_at).toLocaleDateString('pt-BR') : 'Não informada'}</p>
+              </div>
+
+              {(selectedItem.latitude && selectedItem.longitude) || selectedItem.address ? (
+                <div>
+                  <button
+                    onClick={async () => {
+                      const state = mapOpen[selectedItem.id];
+                      if (state && state.show) {
+                        setMapOpen(prev => ({ ...prev, [selectedItem.id]: { ...prev[selectedItem.id], show: false } }));
+                        return;
+                      }
+
+                      if (selectedItem.latitude && selectedItem.longitude) {
+                        setMapOpen(prev => ({ ...prev, [selectedItem.id]: { show: true, lat: selectedItem.latitude, lon: selectedItem.longitude } }));
+                        return;
+                      }
+
+                      setMapOpen(prev => ({ ...prev, [selectedItem.id]: { loading: true } }));
+                      try {
+                        const q = encodeURIComponent(selectedItem.address);
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`);
+                        const json = await res.json();
+                        if (json && json.length > 0) {
+                          const lat = json[0].lat;
+                          const lon = json[0].lon;
+                          setMapOpen(prev => ({ ...prev, [selectedItem.id]: { show: true, lat, lon } }));
+                        }
+                      } catch {
+                        console.error('Erro ao buscar localização');
+                      }
+                    }}
+                    className="text-primary hover:underline font-semibold"
+                  >
+                    {mapOpen[selectedItem.id] && mapOpen[selectedItem.id].show ? 'Ocultar Mapa' : 'Visualizar no Mapa'}
+                  </button>
+
+                  {mapOpen[selectedItem.id] && mapOpen[selectedItem.id].show && (mapOpen[selectedItem.id].lat || mapOpen[selectedItem.id].lon) && (
+                    <div className="mt-3">
+                      <div className="w-full h-64 rounded overflow-hidden border">
+                        <iframe
+                          title={`map-detail-${selectedItem.id}`}
+                          width="100%"
+                          height="100%"
+                          frameBorder="0"
+                          scrolling="no"
+                          src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(mapOpen[selectedItem.id].lon) - 0.01},${Number(mapOpen[selectedItem.id].lat) - 0.01},${Number(mapOpen[selectedItem.id].lon) + 0.01},${Number(mapOpen[selectedItem.id].lat) + 0.01}&layer=mapnik&marker=${mapOpen[selectedItem.id].lat},${mapOpen[selectedItem.id].lon}`}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Ações */}
+            {user && String(user.id) === String(selectedItem.owner_id) && (
+              <div className="flex gap-2 flex-wrap border-t pt-4">
+                <button
+                  onClick={() => {
+                    setSelectedItem(null);
+                    navigate('/register-item', { state: { item: selectedItem } });
+                  }}
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
+                >
+                  <span>✏️</span>
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm('Tem certeza que deseja excluir este item?')) {
+                      handleDelete(selectedItem.id);
+                      setSelectedItem(null);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
+                >
+                  <span>🗑️</span>
+                  <span>Excluir</span>
+                </button>
+              </div>
+            )}
+
+            {user && String(user.id) !== String(selectedItem.owner_id) && (
+              <div className="flex gap-2 flex-wrap border-t pt-4">
+                <button
+                  onClick={() => {
+                    loadOwnerSocialMedia(selectedItem.owner_id);
+                    setContactModal({ open: true, item: selectedItem, message: '', sending: false, error: '' });
+                  }}
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
+                >
+                  <span>💬</span>
+                  <span>Contato</span>
+                </button>
+              </div>
+            )}
+
+            {!user && (
+              <div className="flex gap-2 flex-wrap border-t pt-4">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
+                >
+                  <span>💬</span>
+                  <span>Entrar para Contatar</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Contact modal */}
       {contactModal.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
