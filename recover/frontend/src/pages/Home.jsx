@@ -4,16 +4,16 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
-import { getUser } from '../services/supabaseAuth';
 import { deleteItem } from '../services/items';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [user, setUser] = useState(null);
   const [photosMap, setPhotosMap] = useState({});
   const [mapOpen, setMapOpen] = useState({});
   const [contactModal, setContactModal] = useState({ open: false, item: null, message: '', sending: false, error: '' });
@@ -29,7 +29,6 @@ export default function Home() {
       .then(data => setItems(data))
       .catch(() => setError('Erro ao carregar itens'))
       .finally(() => setLoading(false));
-    getUser().then(u => setUser(u));
   }, []);
 
   // Atualiza lista de categorias e itens filtrados quando items mudam
@@ -290,6 +289,11 @@ export default function Home() {
                 {user && String(user.id) !== String(item.owner_id) && (
                   <div className="mt-2">
                     <button onClick={() => setContactModal({ open: true, item, message: '', sending: false, error: '' })} className="text-sm text-accent hover:underline">Entrar em contato com o proprietário</button>
+                  </div>
+                )}
+                {!user && (
+                  <div className="mt-2">
+                    <button onClick={() => navigate('/login')} className="text-sm text-accent hover:underline">Entrar em contato com o proprietário</button>
                   </div>
                 )}
               </Card>
