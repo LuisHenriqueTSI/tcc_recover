@@ -74,7 +74,7 @@ export default function NotificationBell() {
       {/* Botão do sino */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-neutral-dark hover:text-primary transition-colors"
+        className="relative p-2 text-white hover:text-blue-400 transition-colors"
         aria-label="Notificações"
       >
         <svg

@@ -155,12 +155,17 @@ export default function Home() {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-neutral-light'} flex flex-col items-center justify-center p-2 sm:p-4`}>
-      <Card className="w-full max-w-xl text-center">
-        {/* Apenas um botão para registrar item (se usuário logado vai para /register-item, caso contrário para /login) */}
-        <div className="flex flex-col gap-2 mb-4">
-          <Button variant="primary" onClick={() => navigate(user ? '/register-item' : '/login')}>Registrar Item</Button>
-        </div>
-      </Card>
+      {/* Botão flutuante para registrar item */}
+      <button
+        onClick={() => navigate(user ? '/register-item' : '/login')}
+        className="fixed bottom-8 right-8 z-50 w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full shadow-2xl hover:scale-110 transition-all flex items-center justify-center"
+        title="Registrar Item"
+      >
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+      
       <div className="w-full max-w-full px-8 mt-6">
         <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-primary'} mb-2`}>Itens Registrados</h2>
         {/* Filters */}
