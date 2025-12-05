@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edição de Perfil</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3B82F6",
+                        "secondary": "#8B5CF6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111827",
+                        "surface-dark": "#1F2937",
+                        "text-light": "#F9FAFB",
+                        "disabled-dark": "#4B5563"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px",
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-text-light">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-10 w-full border-b border-surface-dark/80 bg-background-dark/80 px-4 py-3 backdrop-blur-sm sm:px-6 md:px-8">
+<div class="mx-auto flex max-w-5xl items-center justify-between">
+<div class="flex items-center gap-3">
+<svg class="h-8 w-8 text-primary" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+<h1 class="text-xl font-bold tracking-tighter text-text-light">RECOVER</h1>
+</div>
+<nav class="hidden items-center gap-6 md:flex">
+<a class="text-sm font-medium text-text-light/80 transition-colors hover:text-text-light" href="#">Achados</a>
+<a class="text-sm font-medium text-text-light/80 transition-colors hover:text-text-light" href="#">Perdidos</a>
+<a class="text-sm font-bold text-primary" href="#">Meu Perfil</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-surface-dark text-text-light/80 transition-colors hover:bg-surface-dark/80 hover:text-text-light">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-cover bg-center" data-alt="Avatar de usuário com fundo roxo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDj6gHnZWNpvs7UWDPK6r7F1-dzSbSgeSTekJhIBJoBuzxKao9JIr1UYuCwhUYhMTfo4w0dj_vAPu_Zs25R2KUA01Ii6XpTC6hCpwugMIrubgFaAlnxIlC6BF3cqalrv05q58SYxQyYL5EEGqMPIKVqwFwnesQN9tC-MS1CC6Lc5ud9R72t1DEec4z-iLpMlldgvBHtAU_BZ1QMnx3lr_boANIeUvoafmKNQZ16xUoYp44y_t4s1BKX7c7D0_ep4YGvzRY_LY6iMEVz");'></div>
+</div>
+</div>
+</header>
+<main class="flex flex-1 justify-center px-4 py-8 sm:px-6 md:py-12">
+<div class="w-full max-w-2xl">
+<div class="mb-8">
+<h2 class="text-4xl font-black tracking-tighter text-text-light">Edição de Perfil</h2>
+<p class="mt-2 text-text-light/70">Atualize suas informações pessoais e de contato.</p>
+</div>
+<div class="rounded-xl border border-surface-dark bg-surface-dark/50">
+<div class="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
+<div class="relative h-32 w-32">
+<div class="h-full w-full rounded-full bg-cover bg-center" data-alt="Avatar de usuário com fundo roxo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1Azs6vySx-p0L0tt8VueTSd7m-nRIBkquZ7Ozy5EJtuXHNHzh87p2aZLv7cA8prsVPdhs3fbrvtf8D-_iSuolF91-ANCaXUc7guRX0zsGm0XmJ-ypsrv5TjIleBPha9ydzOjUv0ozrB0khTJJmiNzqTTCAduohLFlGExdfW7yyKUbWw-MPOg2d7dbvBWjO5mQ9ZuQbInHXRBmTAe-vEx92-eaPKC5PLZXbowMPpBWuRFqW0A3J2r6UWAY4U18HnpwnQq7kzSEZL2U");'></div>
+<button class="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface-dark bg-primary text-white transition-transform hover:scale-110">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+</div>
+<div>
+<p class="text-lg font-bold text-text-light">Alterar foto</p>
+<p class="text-sm text-text-light/60">PNG ou JPG (máx. 800x800px)</p>
+</div>
+</div>
+<form class="space-y-6 border-t border-surface-dark p-6 sm:p-8">
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<label class="flex flex-col">
+<span class="pb-2 text-sm font-medium text-text-light/90">Nome</span>
+<input class="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0" type="text" value="Ana"/>
+</label>
+<label class="flex flex-col">
+<span class="pb-2 text-sm font-medium text-text-light/90">Sobrenome</span>
+<input class="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0" type="text" value="Silva"/>
+</label>
+</div>
+<label class="flex flex-col">
+<span class="pb-2 text-sm font-medium text-text-light/90">E-mail</span>
+<div class="relative flex w-full items-center">
+<input class="form-input h-12 w-full cursor-not-allowed rounded-lg border-2 border-disabled-dark/50 bg-disabled-dark/30 py-3 pl-4 pr-12 text-base text-disabled-dark placeholder:text-disabled-dark" disabled="" type="email" value="ana.silva@email.com"/>
+<span class="material-symbols-outlined absolute right-4 text-2xl text-disabled-dark">lock</span>
+</div>
+</label>
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<label class="flex flex-col">
+<span class="pb-2 text-sm font-medium text-text-light/90">Telefone</span>
+<input class="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0" placeholder="(11) 99999-9999" type="tel"/>
+</label>
+<label class="flex flex-col">
+<span class="pb-2 text-sm font-medium text-text-light/90">WhatsApp</span>
+<input class="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0" placeholder="(11) 99999-9999" type="tel"/>
+</label>
+</div>
+<div>
+<p class="pb-2 text-sm font-medium text-text-light/90">Redes Sociais (Opcional)</p>
+<div class="space-y-4">
+<div class="relative flex w-full items-center">
+<span class="material-symbols-outlined absolute left-4 text-2xl text-disabled-dark">alternate_email</span>
+<input class="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark py-3 pl-12 pr-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-secondary focus:outline-none focus:ring-0" placeholder="usuário do Instagram" type="text"/>
+</div>
+<div class="relative flex w-full items-center">
+<span class="material-symbols-outlined absolute left-4 text-2xl text-disabled-dark">link</span>
+<input class="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark py-3 pl-12 pr-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-secondary focus:outline-none focus:ring-0" placeholder="Link do perfil no Facebook" type="text"/>
+</div>
+</div>
+</div>
+<div class="flex flex-col-reverse justify-end gap-3 border-t border-surface-dark pt-6 sm:flex-row">
+<button class="flex h-12 w-full items-center justify-center rounded-lg bg-transparent text-sm font-bold text-text-light/80 ring-1 ring-inset ring-surface-dark transition-colors hover:bg-surface-dark/50 sm:w-auto sm:px-6" type="button">
+                                Cancelar
+                            </button>
+<button class="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-sm font-bold text-white transition-opacity hover:opacity-90 sm:w-auto sm:px-6" type="submit">
+                                Salvar Alterações
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</main>
+</div>
+</body></html>

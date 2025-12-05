@@ -1,9 +1,7 @@
+import Header from '../components/Header';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
-import Card from '../components/Card';
-import Input from '../components/Input';
-import Button from '../components/Button';
 import { signIn } from '../services/supabaseAuth';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -46,27 +44,57 @@ export default function LoginSupabase() {
   if (user) return <Navigate to="/home" replace />;
 
   return (
-    <div className="min-h-screen bg-neutral-light flex items-center justify-center p-4">
-      <Card className="max-w-md w-full animate-fade-in">
-        <h2 className="text-2xl font-heading font-bold text-primary mb-4">Entrar</h2>
+    <div className="min-h-screen bg-background-dark">
+      <Header showSearch={false} />
+      <div className="flex items-center justify-center p-4 pt-32">
+        <div className="max-w-md w-full bg-surface-dark rounded-xl p-8 border border-white/10 animate-fade-in">
+        <h2 className="text-3xl font-bold text-white mb-6 text-center">🔐 Entrar</h2>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <Input label="Email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
-          <Input label="Senha" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
-          <Button variant="primary" type="submit" disabled={loading}>
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-text-primary-dark mb-2">Email</label>
+            <input 
+              type="email" 
+              required 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              className="form-input px-4 py-2 rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-surface-dark h-11 placeholder:text-text-secondary-dark text-sm font-normal"
+              placeholder="seu@email.com"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-text-primary-dark mb-2">Senha</label>
+            <input 
+              type="password" 
+              required 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              className="form-input px-4 py-2 rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-surface-dark h-11 placeholder:text-text-secondary-dark text-sm font-normal"
+              placeholder="••••••••"
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white font-semibold transition-colors mt-2"
+          >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></span>
                 Entrando...
               </span>
-            ) : 'Login'}
-          </Button>
+            ) : '✅ Login'}
+          </button>
         </form>
         {error && (
-          <div className="mt-2 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm text-center" role="alert">
+          <div className="mt-4 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm text-center font-semibold" role="alert">
             {error}
           </div>
         )}
-      </Card>
+        <div className="mt-6 text-center text-text-secondary-dark text-sm">
+          Não tem conta? <button onClick={() => navigate('/register')} className="text-primary hover:text-primary/80 font-semibold transition">Criar conta</button>
+        </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sistema de Mensagens - RECOVER</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3B82F6", // Azul vibrante
+                        "secondary": "#8B5CF6", // Roxo sutil
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#121212", // Background principal
+                        "panel-dark": "#1E1E1E", // Background secundário (painéis)
+                        "text-light": "#E5E7EB", // Texto principal
+                        "text-secondary": "#9CA3AF", // Texto secundário
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light">
+<div class="flex h-screen w-full">
+<!-- Main Content -->
+<main class="flex flex-1 flex-col">
+<!-- Header -->
+<header class="flex items-center justify-between border-b border-white/10 px-6 py-3 shrink-0">
+<div class="flex items-center gap-4">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold tracking-tight">RECOVER</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center rounded-full h-10 w-10 hover:bg-white/10">
+<span class="material-symbols-outlined text-text-secondary">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Avatar do usuário" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC3wWW6THnQBjWwbE7nEKwHnrr-h1mUiQdfyMohjQQOmCCgTKXVPKj4xumgeo3eh2XjixqyY8oyoigZGLyMHRewh67rjZZ764rc2Z68yFHY7pb0VzTn2Pn4MBeq5jii2e8kcd7p5gFjK6A61yl1fbC_T-FaH_7PuG2M3DqIxK-mMdmdxISPnJIZmVQDdjyHTB44vEGKH0QtqjXr7XUCEJn67XCoDtsREdYvqhypP_QGfNMLan9oVDGoT78OWujK0584ncqZoLmZqeVb");'></div>
+</div>
+</header>
+<!-- Chat Interface -->
+<div class="grid grid-cols-1 md:grid-cols-[380px_1fr] flex-1 overflow-hidden">
+<!-- Conversations Panel -->
+<aside class="flex flex-col bg-background-light dark:bg-panel-dark border-r border-white/10 overflow-y-auto">
+<div class="p-4 border-b border-white/10">
+<h2 class="text-lg font-semibold mb-4">Mensagens</h2>
+<label class="flex flex-col w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-11">
+<div class="text-text-secondary flex bg-background-dark items-center justify-center pl-3.5 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined" style="font-size: 22px;">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-text-light focus:outline-0 focus:ring-2 focus:ring-inset focus:ring-primary border-none bg-background-dark h-full placeholder:text-text-secondary pl-2 text-sm font-normal" placeholder="Pesquisar conversas..." value=""/>
+</div>
+</label>
+</div>
+<nav class="flex-1 space-y-1 p-2">
+<!-- Active Conversation -->
+<a class="flex gap-4 px-4 py-3 justify-between rounded-lg bg-primary/20 hover:bg-primary/30 transition-colors" href="#">
+<div class="flex items-start gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shrink-0" data-alt="Avatar de Ana" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC5O6zCWWQzjBSktSSWQb0urXZh1ObvUyf3AXFJfeRBcHwgixf2y8PISiV5iONrhEma2lXc-tFXMzgBeshiT8N5iWlvcn9QAkak96xYhD3ONKYfLgUIGSLAPHKFJE-RqoqRN8vfcfkiC-X9JjMSBhppsl0hzVyQALUFXuVAyq84QhAKFNsalp6qaExjG5Pe_UcVdSAzV4zznA6SWVhbbs4saBfM27IJ53xP7psucBupdH0tzxve_U5SJsiUzyQ_J6pCrwvkA96fRM-X");'></div>
+<div class="flex flex-1 flex-col justify-center overflow-hidden">
+<p class="text-text-light text-base font-medium leading-normal truncate">Ana Silva</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Item: Chaves encontradas no parque</p>
+<p class="text-text-light text-sm font-normal leading-normal truncate">Olá, ainda está com o item?</p>
+</div>
+</div>
+<div class="shrink-0 flex flex-col items-end justify-between">
+<p class="text-text-secondary text-xs font-normal">15m</p>
+<div class="flex size-5 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">2</div>
+</div>
+</a>
+<!-- Unread Conversation -->
+<a class="flex gap-4 px-4 py-3 justify-between rounded-lg hover:bg-white/10 transition-colors" href="#">
+<div class="flex items-start gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shrink-0" data-alt="Avatar de Bruno" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBnT0m2lg_HVSg0vgPmn0Kd2WEEmFnoDlQZPnk9kqMv2FKOMFNVepdj9YLpzOCJUd42YjIR-5zumSbNKgKTo_SZe10NosZ-U6PqdUPNth8kwUDRjR0F7HaXFv245zWsRztBivXwOwqFbdsHjuwWSx-p8HNZQtOe6_CxnCdBCTMjlhz5N5N9RdzkFe-KYD7AKIuXaLL5GdWY3-qmYP6Peo6p7B1PQEnV81CDSz-p0Ftp4zmi75so-FX9hZsYLc4h9rDHtPSqgsMxCg44");'></div>
+<div class="flex flex-1 flex-col justify-center overflow-hidden">
+<p class="text-text-light text-base font-medium leading-normal truncate">Bruno Costa</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Item: Carteira perdida</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Sim, podemos combinar a entrega...</p>
+</div>
+</div>
+<div class="shrink-0 flex flex-col items-end justify-between">
+<p class="text-text-secondary text-xs font-normal">1h</p>
+<div class="flex size-5 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">1</div>
+</div>
+</a>
+<!-- Read Conversation -->
+<a class="flex gap-4 px-4 py-3 justify-between rounded-lg hover:bg-white/10 transition-colors" href="#">
+<div class="flex items-start gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shrink-0" data-alt="Avatar de Carla" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAtf9YzKh0kWmth9h5yoQQP1MYVBy2ZfzAjbhhPOPNWcHaf-EgP8yknRA5eKo_60AOoUMiOBy6GsqjB5qqiereA0BqJ_cWi3mzeY8hx0h1IMJOACvUodMxVgpKV2H8N0xASfNvyQWZXurCIj3SdA-j4KVTNEZrojSZnV473B2ih4640SnHSEgxmAI2H6kv2UH9wl47W-3PT4LcsXANpLwW_Y3C5jjSJlFNNRmWzneK363z-gTgIHE2hK8MYK6vS8JLCxwO3iXndVeOQ");'></div>
+<div class="flex flex-1 flex-col justify-center overflow-hidden">
+<p class="text-text-light text-base font-medium leading-normal truncate">Carla Dias</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Item: Celular perdido na biblioteca</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Você: Perfeito, estarei lá.</p>
+</div>
+</div>
+<div class="shrink-0">
+<p class="text-text-secondary text-xs font-normal">Ontem</p>
+</div>
+</a>
+<a class="flex gap-4 px-4 py-3 justify-between rounded-lg hover:bg-white/10 transition-colors" href="#">
+<div class="flex items-start gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shrink-0" data-alt="Avatar de Daniel" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDIH_Zj2Ir0Cvvxb8WS8I5ZVet4Ewh9nNaVTBm9L8HNxuyFfdW6yLwVh1ynv5dI242XGJc3cPqG-DOL2PNAL_EJUzQAPCksRKEkOPG7wCoAXpFIofZNzljBTXD3xl4GSXVhFhX7S_dKhf5kIY5pbLxBrZ1GL4B5HXu32CRmFauzEuF9bfJtwFDFTvQFygfnZcBBHArMTS6n03FbNnVirq5IxWZFqZobrGmdnBbynqqABW7EurzUxDDQ7KWPFXPlc9a81DkXWZeKFmPr");'></div>
+<div class="flex flex-1 flex-col justify-center overflow-hidden">
+<p class="text-text-light text-base font-medium leading-normal truncate">Daniel Martins</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Item: Fones de ouvido achados</p>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Você: Obrigado por avisar!</p>
+</div>
+</div>
+<div class="shrink-0">
+<p class="text-text-secondary text-xs font-normal">2d</p>
+</div>
+</a>
+</nav>
+</aside>
+<!-- Chat View Panel -->
+<section class="flex flex-col bg-background-light dark:bg-background-dark overflow-hidden">
+<!-- Chat Header -->
+<div class="flex items-center justify-between border-b border-white/10 px-6 py-4 shrink-0">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Avatar de Ana" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDGVRpBUBHr0-Qx9NuVpHa-pRSDFTSnfHTbsMTNOtK9pNgRI66lNclJn7wndROgrMOqKOexWNZgmzLTDyiAnWaogBKRr_P5azl6nz3J-vly3D7pXATVRMhEA2sGkUQ5Pr9JbaXQw5b4xENJ9qLisQxLEYw3mn7RPv-bEW4EvB8fxTLhFVKybYWV8xFq6TugJAoyRGD7DG8xs231fP13pUFYZMdG4KehWZqIrg6VF07nnXbUxrUHFHJklhC5bFs59WDS6D7gaoy37gcN");'></div>
+<div>
+<h3 class="font-semibold text-text-light">Ana Silva</h3>
+<a class="text-sm text-primary hover:underline" href="#">Item: Chaves encontradas no parque</a>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-full h-10 w-10 hover:bg-white/10 text-text-secondary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Messages Area -->
+<div class="flex-1 p-6 space-y-6 overflow-y-auto">
+<!-- Message from other user -->
+<div class="flex items-end gap-3 max-w-lg">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end" data-alt="Avatar de Ana" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuASDmjC7Tq5IQlPoswe965PejadX1vdIrYLZkKcQP_G5FrtqGDTqeSZMf4lmYZach6zVc8Ij1A7VQquYhNi2-f0lkaV1_DEKA6s5mZohMm-Rv3Jqu_JoyJs6lrl4nMts3GbgGgwBj6sA6w3YQx9Xxnho5GeywPheKruzwxbykguopfMPPvv52THMwaWaVZ-N5tW-XH2smQdwoMcDbXmtunP_RZ0cOvz82yiHvr2Z9e5h9HHsu58du-9KDWH6BZT4WAsA7xjrZ7AHjMe");'></div>
+<div class="relative flex flex-col gap-1">
+<div class="bg-panel-dark p-3 rounded-lg rounded-bl-none">
+<p class="text-text-light text-sm">Olá! Vi seu anúncio sobre as chaves. Acredito que sejam minhas, onde você as encontrou exatamente?</p>
+</div>
+<span class="text-xs text-text-secondary pl-1">10:38</span>
+</div>
+</div>
+<!-- Message from me -->
+<div class="flex items-end gap-3 justify-end">
+<div class="relative flex flex-col gap-1 items-end">
+<div class="bg-primary p-3 rounded-lg rounded-br-none max-w-lg">
+<p class="text-white text-sm">Oi, Ana! Encontrei perto do banco ao lado do playground. Elas têm um chaveiro roxo?</p>
+</div>
+<span class="text-xs text-text-secondary pr-1">10:40</span>
+</div>
+</div>
+<!-- Message from other user -->
+<div class="flex items-end gap-3 max-w-lg">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end" data-alt="Avatar de Ana" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA24edK0USvUb1NHVVRehgQDbhtnDm9NIiiYjfJGGDdvVQr_erqMWO-UHpD115D4eMyYjULca6FWW6tEroxVh6XIV39bDWGzBJk_Wj9i-iFB3xrc0FnrtKPfTsBUTTSIic6m3awxnVvMn61HCPsrfVBhf9O85tRnZffPSTjYC9Zk350HDHyzcvJ0aMEHnoGZkbiL4H82eYT68WNcHCf270Csd2tYyXWyYGWFL4Ef0zqwDrcOmb2T4OftwCIIVczZ6xCGwPeCtn73ws5");'></div>
+<div class="relative flex flex-col gap-1">
+<div class="bg-panel-dark p-3 rounded-lg rounded-bl-none">
+<p class="text-text-light text-sm">Sim! Exatamente! Um chaveiro de gatinho roxo.</p>
+</div>
+<span class="text-xs text-text-secondary pl-1">10:41</span>
+</div>
+</div>
+<!-- Message from other user (active conversation) -->
+<div class="flex items-end gap-3 max-w-lg">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end" data-alt="Avatar de Ana" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDmdkKGJ6tIpBW1TtN7-kIhFhYQAj-PRe3TvdpDcBcPoMtGxjEi27doWITcYVkszLhdcSl3oqYdaHFqy467_fKE8OvPz-ayeKz3tgdA6CE-qp8tfCehxaz6HVi_adLuxiN9U8OLCCHo83IGG5e0cqJkte4jQKHw5Ptjg-LzFnsO5rXOT0ljrWOKol2Zvpjk8-CUiuZj6ByWd31_tMw4VIg0h5AVqdArgO_eebnEtMp7XGcW4w1K3I3t3YaPCF3FdVx5IeLxMKSxZm0L");'></div>
+<div class="relative flex flex-col gap-1">
+<div class="bg-panel-dark p-3 rounded-lg rounded-bl-none">
+<p class="text-text-light text-sm">Olá, ainda está com o item?</p>
+</div>
+<span class="text-xs text-text-secondary pl-1">10:42</span>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="border-t border-white/10 p-4">
+<div class="flex items-center gap-4 bg-panel-dark rounded-xl pr-2">
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-text-light placeholder:text-text-secondary py-3 px-4" placeholder="Digite sua mensagem..." type="text"/>
+<button class="flex items-center justify-center size-9 bg-primary rounded-lg text-white hover:bg-blue-500 transition-colors shrink-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">send</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

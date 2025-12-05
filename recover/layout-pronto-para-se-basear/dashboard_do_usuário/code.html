@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard do Usuário</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#279ae7",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111b21",
+                        "secondary-purple": "#6F00FF"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="flex h-full grow flex-col">
+<header class="sticky top-0 z-10 flex items-center justify-center border-b border-solid border-white/10 bg-background-dark/80 px-4 py-3 backdrop-blur-md sm:px-8 md:px-10">
+<div class="flex w-full max-w-7xl items-center justify-between whitespace-nowrap">
+<div class="flex items-center gap-4 text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">RECOVER</h2>
+</div>
+<div class="hidden items-center gap-8 md:flex">
+<a class="text-white text-sm font-medium leading-normal transition-colors hover:text-primary" href="#">Dashboard</a>
+<a class="text-slate-400 text-sm font-medium leading-normal transition-colors hover:text-primary" href="#">Meus Itens</a>
+<a class="text-slate-400 text-sm font-medium leading-normal transition-colors hover:text-primary" href="#">Mensagens</a>
+</div>
+<div class="flex flex-1 items-center justify-end gap-3">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white/10 text-slate-300 transition-colors hover:bg-white/20 hover:text-white">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="User profile picture, a person smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBUE000PYlPJH6StVfuFjWuyW5Kdlx3WXewz-9MddJbFq1chzSafhV_wCwALP9-NPH2r_kfqhlxknzo5qVdtNWwrqAeSVB4WyV65jN7xOuC1N2fDqkoQ-r7sz1c4n_Koze1lur81v1e_0dRcTgQFu-ad7_O1KUJm2I9nJKSyY6qDAwPXiOPAYIXs2LQcIMY9k8DrGBBrg-8I0ACMP217v1vakM-B6K672Q6-c7zcEsB4yc33eN6pkT24pNRvrUWyWZstSvCtAVn1JlA");'></div>
+</div>
+</div>
+</header>
+<main class="w-full flex-1 p-4 sm:p-6 md:p-8">
+<div class="mx-auto flex max-w-7xl flex-col gap-8">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-col gap-1">
+<p class="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Olá, Usuário!</p>
+<p class="text-slate-400 text-base font-normal leading-normal">Bem-vindo de volta ao seu painel.</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] transition-opacity hover:opacity-90">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="truncate">Publicar Novo Item</span>
+</button>
+</div>
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-6 border border-white/10 bg-white/5">
+<p class="text-slate-300 text-base font-medium leading-normal">Itens Publicados</p>
+<p class="text-white tracking-light text-4xl font-bold leading-tight">12</p>
+<p class="text-green-400 text-sm font-medium leading-normal">+2%</p>
+</div>
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-6 border border-white/10 bg-white/5">
+<p class="text-slate-300 text-base font-medium leading-normal">Mensagens Não Lidas</p>
+<p class="text-white tracking-light text-4xl font-bold leading-tight">3</p>
+<p class="text-green-400 text-sm font-medium leading-normal">+1</p>
+</div>
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-6 border border-white/10 bg-white/5">
+<p class="text-slate-300 text-base font-medium leading-normal">Itens Resolvidos</p>
+<p class="text-white tracking-light text-4xl font-bold leading-tight">5</p>
+<p class="text-green-400 text-sm font-medium leading-normal">+10%</p>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+<div class="flex flex-col gap-4 lg:col-span-2">
+<h2 class="text-white text-2xl font-bold leading-tight tracking-[-0.015em]">Meus Últimos Itens Publicados</h2>
+<div class="flex flex-col divide-y divide-white/10 rounded-xl border border-white/10 bg-white/5">
+<div class="flex items-center gap-4 p-4 min-h-[72px] justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" data-alt="A set of house keys on a wooden table" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAa7wdtbV-fAKNOvX840tABq0aVZGwKf1WtvdhYgyY4iPRe7XYimm2OEKlP4tB9n6mh6z0H7BCtbbSpwYK-ugoO3jdo7WRmoFjo4Y5a_KEC8Slg3bhHLdSaXqSnh_Zo6zBTJyoiZxcm1ZNvwDriESJOLPwp04yEGkHnIOA-tXNxO9Z2hySS84mwCskL66n83dYDeRoxMZQKWXJj1LdKVDBt15LwllN6tOfZFTvkRq7p53HGS4Zolon6rB6yVFacKz_ekO5jbDeEVgy2");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">Chaves de Casa</p>
+<p class="text-slate-400 text-sm font-normal leading-normal line-clamp-2">Categoria: Chaves</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-400">Ativo</span>
+<button class="rounded-md px-3 py-1 text-sm font-medium leading-normal transition-colors hover:bg-white/10">Gerenciar</button>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 min-h-[72px] justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" data-alt="A black leather wallet open with some cards showing" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDnISIQx6tHfVG1Dblq8797caoxohsTJlbxwoabGerqESIHVzWayGDkIQ-xBpaThJFbUTHO6j6meJxnYXmQgpYPiRb2HNvWW5ZBYaANgFFSOpkiSWBt8TQ4O_fBbqbDUE0FoYUBFJ83Lw9EJBlTHMS4w5KqHrib3HRiZybA--0dXAKhETLIwDYtEI97K2zQPwO0yZmEVFaR5ANfT9EjhIRbGoExk86v1Qug4iMJjypZsGkb9046FzHWo8K2JStH53P0jRkoTER5hyyu");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">Carteira de Couro Preta</p>
+<p class="text-slate-400 text-sm font-normal leading-normal line-clamp-2">Categoria: Carteiras</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-400">Ativo</span>
+<button class="rounded-md px-3 py-1 text-sm font-medium leading-normal transition-colors hover:bg-white/10">Gerenciar</button>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 min-h-[72px] justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" data-alt="A smartphone with a cracked screen lying on the pavement" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAn5Q4b8nxMj_NkrUs30iaOS6AuACW9BrmQ6OLsXkMyI1qrr-ixYGH5PuBKPYoqPPCgsEl9lTA53Gft2jCHnSZUFdNctGpmrlztfUgTOUXUuTPalkZIWkG1e33g1xi8yEfnz1KYdS_XzeQKPbJhSbPuv0oEW-4OLt2XP8BcjWy1RKDucJp84PrMAXfeYLRGEFrsjSA2V_tQ21UIqbZS0HzvWTEHBhDTQLnaItWqqBJRKhbbXshg4KmVd_FxVEujiyJz4KZf2c21nh_z");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">Celular Samsung</p>
+<p class="text-slate-400 text-sm font-normal leading-normal line-clamp-2">Categoria: Eletrônicos</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center rounded-full bg-slate-500/20 px-2.5 py-0.5 text-xs font-medium text-slate-400">Resolvido</span>
+<button class="rounded-md px-3 py-1 text-sm font-medium leading-normal transition-colors hover:bg-white/10">Ver Detalhes</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h2 class="text-white text-2xl font-bold leading-tight tracking-[-0.015em]">Resumo das Mensagens</h2>
+<div class="flex flex-col divide-y divide-white/10 rounded-xl border border-white/10 bg-white/5">
+<div class="flex items-start gap-4 p-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Profile picture of Maria Silva" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAaT-0ffSyWXavI68BdEXg4xhghDXE9PPJCz2x0NpWRbl9AwBNO6W3QjnuESVLSZLMvt9ZuQCkbUk2GTVykMdPMX1RlGsya89zfvE1ntxbujm_1gHibz1zTzLUoOoXgWFW_XuqXsw8fqa5jWNVEtZxVzYiiN5fPCmWkQaZtOu_n05uQtd6j0pibOtt6RfCfOVzWtWyfBUVkm1Yif4eHu-fJ9qQ59ko6-3Z4CuBTJoxUsMemugUmdA2Z3hH4s8Ov_t1cdEd6m8wlIYiI");'></div>
+<div class="flex flex-1 flex-col">
+<div class="flex items-baseline justify-between">
+<p class="text-white font-semibold">Maria Silva</p>
+<p class="text-xs text-slate-400">2h atrás</p>
+</div>
+<p class="text-sm text-slate-400 line-clamp-2">Olá, acho que encontrei as chaves que você publicou. Onde podemos nos encontrar?</p>
+</div>
+<div class="mt-1 h-2.5 w-2.5 rounded-full bg-secondary-purple"></div>
+</div>
+<div class="flex items-start gap-4 p-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Profile picture of João Pereira" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJezDdM22mtmrYfaKLlRFjYEu_to52S64BPRXh1J1BpfnV3EUndATL1jTOVwvgHM23qGOaCn1FTI-qfVVP9FQY67I1Hcq4TrH1XYy4LfB7-ktOIxrFUSwFbNxpDvin0giA8TVQdh8tyqxzfwslYueC9ZMPVHOyyDbo8DZJufYH-Ep0X3QBixAhkBy4WdUcuhVoX0GPfUExSimwN_3UngIxFIgylGNRpW6VvbTnKmxAN5jV1NXvXjJsaBqxMlIAl6CuexZkkUbZwuIy");'></div>
+<div class="flex flex-1 flex-col">
+<div class="flex items-baseline justify-between">
+<p class="text-white font-semibold">João Pereira</p>
+<p class="text-xs text-slate-400">5h atrás</p>
+</div>
+<p class="text-sm text-slate-400 line-clamp-2">Oi! Sobre a carteira preta, pode me confirmar a marca? Tenho quase certeza que é a minha.</p>
+</div>
+<div class="mt-1 h-2.5 w-2.5 rounded-full bg-secondary-purple"></div>
+</div>
+<div class="flex items-start gap-4 p-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Profile picture of Ana Costa" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBwvtEmSfKe3w6ljq9UGiYe82-RmgbWolnjAfy-sFqBdkCl6-D-ogsGtknDD0UxBwHdceFBkMRtyZjKMdp3FeTDP4Wm3DC54bXlxFE6Xcb-z--ka4iEldXh7eI31HLivg13wj4t-NWPUz4zuF_4MnBxYTWFN18-qcIQMRx8SVnoyUqJ7ldAGZvNG5njM9SzSCQWLa3BkDNxL-Kcr-AnesHiuzC_WE9yxXOEgYQKpySLfNzDXtYNCOxnNtEEjGQKKdorNdeJA9bLBQgA");'></div>
+<div class="flex flex-1 flex-col">
+<div class="flex items-baseline justify-between">
+<p class="text-white font-semibold">Ana Costa</p>
+<p class="text-xs text-slate-400">1d atrás</p>
+</div>
+<p class="text-sm text-slate-400 line-clamp-2">Que bom que encontrou seu celular! Fico feliz em ter ajudado.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

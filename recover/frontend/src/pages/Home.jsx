@@ -1,6 +1,5 @@
-
-import Card from '../components/Card'
-import Button from '../components/Button'
+import Header from '../components/Header'
+import Sidebar from '../components/Sidebar'
 import ShareButton from '../components/ShareButton'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
@@ -154,232 +153,80 @@ export default function Home() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-neutral-light'} flex flex-col items-center justify-center p-2 sm:p-4`}>
-      {/* Botão flutuante para registrar item */}
-      <button
-        onClick={() => navigate(user ? '/register-item' : '/login')}
-        className="fixed bottom-8 right-8 z-50 w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full shadow-2xl hover:scale-110 transition-all flex items-center justify-center"
-        title="Registrar Item"
-      >
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
-      
-      <div className="w-full max-w-full px-8 mt-6">
-        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-primary'} mb-2`}>Itens Registrados</h2>
-        {/* Filters */}
-        <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
-          <div className="flex gap-2 w-full">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por título, descrição ou endereço" className={`w-full px-3 py-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600 placeholder-gray-400' : 'bg-white text-black border-gray-300'}`} />
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={`px-3 py-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}>
-              <option value="all">Todos</option>
-              <option value="lost">Perdidos</option>
-              <option value="found">Encontrados</option>
-            </select>
-            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={`px-3 py-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}>
-              <option value="all">Todas categorias</option>
-              {categories.map(c => (
-                <option value={c} key={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2 mt-2 sm:mt-0">
-            {user ? (
-              <label className={`text-sm flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><input type="checkbox" checked={mineOnly} onChange={e => setMineOnly(e.target.checked)} /> Meus itens</label>
-            ) : null}
-            <button className={`px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 text-white border-gray-600 hover:bg-gray-600' : 'bg-white text-black border-gray-300 hover:bg-gray-100'}`} onClick={() => { setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setMineOnly(false); }}>Limpar</button>
-          </div>
-        </div>
+    <div className="relative flex min-h-screen w-full flex-col bg-background-dark">
+      <Header 
+        showSearch={true}
+        searchValue={search}
+        onSearchChange={setSearch}
+      />
+      <Sidebar 
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        categoryFilter={categoryFilter}
+        onCategoryChange={setCategoryFilter}
+        showMyItems={mineOnly}
+        onMyItemsChange={setMineOnly}
+      />
 
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
-            <span className={`ml-4 font-semibold ${darkMode ? 'text-white' : 'text-primary'}`}>Carregando...</span>
-          </div>
-        ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span className="block sm:inline">{error}</span>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <p className={darkMode ? 'text-gray-300' : 'text-neutral-dark'}>Nenhum item corresponde aos filtros.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-            {filteredItems.map((item, idx) => (
-              <div
-                key={item.id}
-                onClick={() => setSelectedItem(item)}
-                className="cursor-pointer"
-              >
-                <Card className={`text-left transition-all duration-500 ease-in-out opacity-0 animate-fade-in flex flex-col h-[36rem] hover:shadow-lg`} style={{animationDelay: `${idx * 80}ms`} }>
-                  {/* imagem (se disponível) com botão compartilhar */}
-                  <div className="relative flex-shrink-0">
+      {/* Main content */}
+      <main className="flex-1 lg:ml-80 p-10 pt-32">
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
+              <span className="ml-4 font-semibold text-white">Carregando...</span>
+            </div>
+          ) : error ? (
+            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-4">
+              <span>{error}</span>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <p className="text-text-secondary-dark text-center py-12">Nenhum item corresponde aos filtros.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+              {filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className="flex flex-col overflow-hidden rounded-xl bg-surface-dark/60 shadow-lg transition-all hover:shadow-primary/20 hover:-translate-y-1 cursor-pointer"
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl">
                     {photosMap[item.id] ? (
-                      <div className="w-full h-72 mb-2 overflow-hidden rounded">
-                        <img src={photosMap[item.id]} alt={item.title || item.name} className="object-cover w-full h-full" />
-                      </div>
+                      <img className="h-full w-full object-cover" src={photosMap[item.id]} alt={item.title || item.name} />
                     ) : (
-                      <div className={`w-full h-72 mb-2 ${darkMode ? 'bg-gray-700' : 'bg-neutral-100'} flex items-center justify-center rounded ${darkMode ? 'text-gray-400' : 'text-neutral-dark'} text-sm`}>Sem foto</div>
+                      <div className="h-full w-full bg-surface-dark flex items-center justify-center text-text-secondary-dark">Sem foto</div>
                     )}
-                    {/* Botão compartilhar no canto superior direito */}
-                    <div className="absolute top-2 right-2" onClick={e => e.stopPropagation()}>
-                      <ShareButton item={item} />
                   </div>
-                </div>
-                
-                {/* Conteúdo com altura fixa e scroll */}
-                <div className="flex-grow overflow-hidden flex flex-col">
-                  <div className="flex items-center justify-between mb-1 flex-shrink-0">
-                    <div className={`font-bold ${darkMode ? 'text-white' : 'text-primary'} truncate`}>{item.title || item.name}</div>
-                    <div className={`text-xs font-semibold flex-shrink-0 ml-2 ${item.status === 'found' ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {item.status === 'found' ? 'Encontrado' : 'Perdido'}
+
+                  {/* Content */}
+                  <div className="flex flex-col flex-1 p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-medium text-secondary bg-secondary/20 px-2 py-0.5 rounded-full">
+                        {item.category || 'Outros'}
+                      </span>
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${item.status === 'found' ? 'bg-found-blue text-white' : 'bg-lost-yellow text-background-dark'}`}>
+                        {item.status === 'found' ? 'ACHADO' : 'PERDIDO'}
+                      </span>
                     </div>
-                  </div>
-                  
-                  {/* Descrição com "Ver mais" */}
-                  <div className={`text-sm mb-2 ${!expandedCards[item.id] ? 'line-clamp-2' : ''} ${darkMode ? 'text-gray-300' : 'text-neutral-dark'}`}>
-                    {item.description}
-                  </div>
-                  
-                  {item.description && item.description.split('\n').length > 2 && (
-                    <button
-                      onClick={() => setExpandedCards(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                      className="text-xs text-primary hover:underline mb-2 font-semibold"
-                    >
-                      {expandedCards[item.id] ? 'Ver menos' : 'Ver mais'}
+                    <h3 className="text-base font-bold text-white mb-1.5">{item.title || item.name}</h3>
+                    <p className="text-sm text-text-secondary-dark mb-3 flex-1 line-clamp-2">
+                      {item.description && item.description.length > 60
+                        ? `${item.description.substring(0, 60)}... `
+                        : item.description}
+                      {item.description && item.description.length > 60 && (
+                        <a className="text-primary font-semibold hover:underline" href="#">Ver mais...</a>
+                      )}
+                    </p>
+                    <button className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 border-2 border-primary text-primary text-xs font-bold tracking-wide hover:bg-primary hover:text-white transition-colors">
+                      Ver Detalhes
                     </button>
-                  )}
-                  
-                  <div className={`text-xs mb-1 flex-shrink-0 ${darkMode ? 'text-gray-400' : 'text-neutral-dark'}`}>{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</div>
-                  <div className={`text-xs mb-2 flex-shrink-0 truncate ${darkMode ? 'text-gray-400' : 'text-neutral-dark'}`}>
-                    {item.address ? (
-                      <span>{item.address}</span>
-                    ) : item.latitude && item.longitude ? (
-                      <span>Local: {Number(item.latitude).toFixed(5)}, {Number(item.longitude).toFixed(5)}</span>
-                    ) : null}
                   </div>
-                  
-                  {/* Mapa e botões no final */}
-                  <div className="flex-grow" />
                 </div>
-                
-                {(item.latitude && item.longitude) || item.address ? (
-                  <div className="mb-2 flex-shrink-0">
-                    <button
-                      onClick={async () => {
-                        // Se já está aberto, fechar
-                        const state = mapOpen[item.id];
-                        if (state && state.show) {
-                          setMapOpen(prev => ({ ...prev, [item.id]: { ...prev[item.id], show: false } }));
-                          return;
-                        }
+              ))}
+            </div>
+          )}
+        </main>
 
-                        // Se já temos coords resolvidas no estado, apenas abrir
-                        if (state && (state.lat || state.lon)) {
-                          setMapOpen(prev => ({ ...prev, [item.id]: { ...prev[item.id], show: true } }));
-                          return;
-                        }
-
-                        // Caso item tenha lat/lon, abra diretamente
-                        if (item.latitude && item.longitude) {
-                          setMapOpen(prev => ({ ...prev, [item.id]: { show: true, lat: item.latitude, lon: item.longitude } }));
-                          return;
-                        }
-
-                        // Caso só tenha endereço, buscar coords via Nominatim
-                        setMapOpen(prev => ({ ...prev, [item.id]: { loading: true } }));
-                        try {
-                          const q = encodeURIComponent(item.address);
-                          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`);
-                          const json = await res.json();
-                          if (json && json.length > 0) {
-                            const lat = json[0].lat;
-                            const lon = json[0].lon;
-                            setMapOpen(prev => ({ ...prev, [item.id]: { show: true, lat, lon } }));
-                          } else {
-                            setMapOpen(prev => ({ ...prev, [item.id]: { loading: false, error: 'Endereço não encontrado' } }));
-                          }
-                        } catch {
-                          setMapOpen(prev => ({ ...prev, [item.id]: { loading: false, error: 'Falha ao buscar coordenadas' } }));
-                        }
-                      }}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      {mapOpen[item.id] && mapOpen[item.id].show ? 'Ocultar no mapa' : 'Visualizar no mapa'}
-                    </button>
-
-                    {/* feedback de loading / erro */}
-                    {mapOpen[item.id] && mapOpen[item.id].loading && (
-                      <div className="text-sm text-neutral-dark mt-1">Buscando localização...</div>
-                    )}
-                    {mapOpen[item.id] && mapOpen[item.id].error && (
-                      <div className="text-sm text-red-600 mt-1">{mapOpen[item.id].error}</div>
-                    )}
-
-                    {/* iframe quando disponível */}
-                    {mapOpen[item.id] && mapOpen[item.id].show && (mapOpen[item.id].lat || mapOpen[item.id].lon) && (
-                      <div className="mt-2">
-                        <div className="w-full h-40 rounded overflow-hidden border">
-                          <iframe
-                            title={`map-${item.id}`}
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            scrolling="no"
-                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(mapOpen[item.id].lon) - 0.005},${Number(mapOpen[item.id].lat) - 0.005},${Number(mapOpen[item.id].lon) + 0.005},${Number(mapOpen[item.id].lat) + 0.005}&layer=mapnik&marker=${mapOpen[item.id].lat},${mapOpen[item.id].lon}`}
-                          />
-                        </div>
-                        <div className="text-xs mt-1">
-                          <a href={`https://www.openstreetmap.org/?mlat=${mapOpen[item.id].lat}&mlon=${mapOpen[item.id].lon}#map=16/${mapOpen[item.id].lat}/${mapOpen[item.id].lon}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">Abrir no mapa em nova aba</a>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : null}
-                {user && String(user.id) === String(item.owner_id) && (
-                  <div className="mt-4 flex gap-2 flex-wrap items-center">
-                    <button onClick={() => navigate('/register-item', { state: { item } })} className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg">
-                      <span>✏️</span>
-                      <span>Editar</span>
-                    </button>
-                    <button onClick={() => handleDelete(item.id)} className="inline-flex items-center gap-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg">
-                      <span>🗑️</span>
-                      <span>Excluir</span>
-                    </button>
-                  </div>
-                )}
-                {user && String(user.id) !== String(item.owner_id) && (
-                  <div className="mt-4 flex gap-2 flex-wrap">
-                    <button 
-                      onClick={() => {
-                        loadOwnerSocialMedia(item.owner_id);
-                        setContactModal({ open: true, item, message: '', sending: false, error: '' });
-                      }} 
-                      className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
-                    >
-                      <span>💬</span>
-                      <span>Contato</span>
-                    </button>
-                  </div>
-                )}
-                {!user && (
-                  <div className="mt-4 flex gap-2 flex-wrap">
-                    <button 
-                      onClick={() => navigate('/login')} 
-                      className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition shadow-md hover:shadow-lg"
-                    >
-                      <span>💬</span>
-                      <span>Entrar para Contatar</span>
-                    </button>
-                  </div>
-                )}
-              </Card>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      
       {/* Modal de detalhes do item */}
       {selectedItem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Home (Listagem de Itens) - RECOVER</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3A86FF",
+                        "secondary": "#8338EC",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#121212",
+                        "surface-dark": "#1E1E2F",
+                        "text-primary-dark": "#FFFFFF",
+                        "text-secondary-dark": "#AAB2C8",
+                        "lost-red": "#FF595E",
+                        "found-green": "#8AC926"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary-dark">
+<div class="relative flex min-h-screen w-full flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-0 z-50 flex h-20 items-center justify-between whitespace-nowrap border-b border-solid border-white/10 bg-surface-dark/80 px-10 py-3 backdrop-blur-md">
+<div class="flex flex-shrink-0 items-center gap-10">
+<div class="flex items-center gap-3 text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-white text-2xl font-bold tracking-tighter">RECOVER</h2>
+</div>
+<div class="hidden lg:flex items-center gap-6">
+<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-text-secondary-dark text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Sobre</a>
+<a class="text-text-secondary-dark text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Contato</a>
+</div>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2 w-full max-w-lg">
+<label class="flex flex-col w-full">
+<div class="relative flex w-full flex-1 items-stretch">
+<div class="text-text-secondary-dark absolute inset-y-0 left-0 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-surface-dark h-12 placeholder:text-text-secondary-dark pl-12 pr-4 text-sm font-normal leading-normal" placeholder="Buscar por item..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-shrink-0 items-center justify-end gap-3">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white/5 text-text-secondary-dark hover:bg-white/10 hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl">chat_bubble</span>
+</button>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white/5 text-text-secondary-dark hover:bg-white/10 hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<div class="ml-2 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/50" data-alt="User avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJ5Nfrwll3vgByg29e4RlsXLLlhYSq0zyIePQoXalVVdP1_bUmaTL0BpIZOV1jeSGZLS82JPVqVmW0y_2yUHYHwoUYrMdskJho2tnIQm7udpg01LUtUg7_ZF8rnxjz-CtcbqYsQUYIjtHxf1zlyaiGK_T4UYzi_grQvw1y_wSKnOaU_MNONOZ6dmpMie11MpP2dUAGnOotTAMC-LOCoRFJzQKzn0-es9puz6wYdlQZTaz9EWNODWWJKRtoz3bWsuSnm1aAAtlS1R2i");'></div>
+</div>
+</header>
+<div class="flex w-full pt-20">
+<!-- SideNavBar -->
+<aside class="fixed top-20 left-0 h-[calc(100vh-5rem)] w-72 flex-col justify-between border-r border-solid border-white/10 bg-surface-dark p-6 hidden lg:flex">
+<div class="flex flex-col gap-8">
+<h1 class="text-white text-lg font-semibold leading-normal">Filtros</h1>
+<div class="flex flex-col gap-6">
+<!-- SearchBar in filters -->
+<label class="flex flex-col w-full">
+<div class="relative flex w-full flex-1 items-stretch">
+<div class="text-text-secondary-dark absolute inset-y-0 left-0 flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-background-dark h-12 placeholder:text-text-secondary-dark pl-10 pr-4 text-sm font-normal leading-normal" placeholder="Buscar por item..." value=""/>
+</div>
+</label>
+<!-- TextField Status -->
+<label class="flex flex-col w-full">
+<p class="text-text-secondary-dark text-sm font-medium leading-normal pb-2">Status</p>
+<select class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-background-dark h-12 p-3 text-sm font-normal leading-normal appearance-none bg-no-repeat bg-right-2" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCkEwRf0_o5UpUVelbakGNODSIqlAaibL0fk80Xy58h7xE_WOjMvYrG8aQKiG4p4QfxzVQgGDdYfZE636VnnfnBY-dmzdvV2rjy6JezEr7J3FcT9mxmacePgIWG0Q_ErQeUoBbz6PnqV9UCm69cKNeTT3BlUdAa-xrdu5kZNFaGKkp343q4_3IqRXZRDKeKYj72hwas7MjHe0Jmx0JP2k28VCQ-H4O1HJ9i9HQFoIKaHc7TJW0bOsL3OFRmItyX8D6jlGNSBj8Mblzk');">
+<option>Todos</option>
+<option value="lost">Perdido</option>
+<option value="found">Encontrado</option>
+</select>
+</label>
+<!-- TextField Category -->
+<label class="flex flex-col w-full">
+<p class="text-text-secondary-dark text-sm font-medium leading-normal pb-2">Categoria</p>
+<select class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-background-dark h-12 p-3 text-sm font-normal leading-normal appearance-none bg-no-repeat bg-right-2" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCkEwRf0_o5UpUVelbakGNODSIqlAaibL0fk80Xy58h7xE_WOjMvYrG8aQKiG4p4QfxzVQgGDdYfZE636VnnfnBY-dmzdvV2rjy6JezEr7J3FcT9mxmacePgIWG0Q_ErQeUoBbz6PnqV9UCm69cKNeTT3BlUdAa-xrdu5kZNFaGKkp343q4_3IqRXZRDKeKYj72hwas7MjHe0Jmx0JP2k28VCQ-H4O1HJ9i9HQFoIKaHc7TJW0bOsL3OFRmItyX8D6jlGNSBj8Mblzk');">
+<option>Todas</option>
+<option value="electronics">Eletrônicos</option>
+<option value="documents">Documentos</option>
+<option value="accessories">Acessórios</option>
+<option value="others">Outros</option>
+</select>
+</label>
+<!-- Checkbox -->
+<div class="flex items-center pt-2">
+<input class="form-checkbox h-5 w-5 rounded border-white/20 bg-background-dark text-primary focus:ring-primary/50 focus:ring-offset-background-dark" id="my-items" type="checkbox"/>
+<label class="ml-3 text-sm font-medium text-white" for="my-items">Meus Itens</label>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 lg:ml-72 p-8">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold text-white">Itens Recentes</h2>
+</div>
+<!-- Items Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+<!-- Item Card 1 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-dark border border-white/10 group">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A smartphone lying on a wooden surface next to a pair of glasses." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2Hyga-1J6ijkV_IDGpAtvj384CP-dRwyOwfv7UJ-47YRdeLLiWSCDSj2Cj2uJ7SKQhnNzIw76rbipGvkztHi4GEqGBBiP_1r-ATxVRnNGa5oIDAAN3SyPLML0eR7kvM8zV-LeLvF53qQ_TWgZKFr0mR_5yAtEoyErMGZGInSeInSAyU1evqAxFVF-zWaWBMpybolP-bj0Jn1azh4UEZOm7ZzQUhhvjYYnH7HYxSwfTg80Xl0gP1uBdgSxzhvQcl8iFaXyTtPntYRv"/>
+<div class="absolute top-3 right-3">
+<span class="inline-block rounded-full bg-lost-red/80 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white">PERDIDO</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 p-5">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white mb-1">iPhone 13 Pro</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/20 px-2 py-1 rounded">Eletrônicos</span>
+</div>
+<p class="text-sm text-text-secondary-dark mt-2 mb-4 flex-1">Encontrado perto da biblioteca central. A tela está um pouco arranhada, mas... <a class="text-primary font-semibold hover:underline" href="#">Ver mais...</a></p>
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors">Ver Detalhes</button>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-dark border border-white/10 group">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A set of keys with a leather keychain on a textured background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDppVGtqsBMUOUjc5M3ZiE_VD-BDg2XUxj1auzIY-18F-dY8tJ0p7Q7_zIbHFVBgaqFC8GouuV0IXaGjpgLo2kVTfyCXChhYs1H_1jYEUnwaCnFZsRmQnBxOi1XU6N4YY-mZcgdd-XFc4q7n5qBZjrSLhzCNxphfqjweXIziNgpnmd2k0ATsVZBBovwNIz-ZHuFHy850U4kZN8Sp3y6jyL3wNTEW4lpm4LOpUXrKBRz7g7ft0foAVBYza4q6TCataEaDrm_8lj9PxCz"/>
+<div class="absolute top-3 right-3">
+<span class="inline-block rounded-full bg-found-green/80 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white">ENCONTRADO</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 p-5">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white mb-1">Chaves do Carro</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/20 px-2 py-1 rounded">Acessórios</span>
+</div>
+<p class="text-sm text-text-secondary-dark mt-2 mb-4 flex-1">Molho de chaves encontrado no estacionamento do bloco C. Tem um chaveiro de couro... <a class="text-primary font-semibold hover:underline" href="#">Ver mais...</a></p>
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors">Ver Detalhes</button>
+</div>
+</div>
+<!-- Item Card 3 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-dark border border-white/10 group">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="An open brown leather wallet with some cards visible." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8x-6_DFH5fdrlQHfakXeHW10hw-biMNKvSuA45NWqrepZf7CiyH7qFL6ocTR6jDTwMI0s-xnC-bQQgB7eUZFjHhttcEuMSGGCiqZwIJU_vuoHHBm82MZhWjEJJpY0cXOfzLjfTHX_Q6yyljI410ghsl8G8snLGpSD1wzmC7NEHzgmgHT76NCeVF5nM7DDFXyrQeMLSc1dBxNw6iivCHRZ2buebHAbZ8YPKnb5V8S-RMrBgfpyhKASLZ8EA55ys3URGmkezmOHMP8I"/>
+<div class="absolute top-3 right-3">
+<span class="inline-block rounded-full bg-lost-red/80 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white">PERDIDO</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 p-5">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white mb-1">Carteira de Couro</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/20 px-2 py-1 rounded">Documentos</span>
+</div>
+<p class="text-sm text-text-secondary-dark mt-2 mb-4 flex-1">Perdi minha carteira marrom, provavelmente no ônibus linha 5. Contém CNH e cartões... <a class="text-primary font-semibold hover:underline" href="#">Ver mais...</a></p>
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors">Ver Detalhes</button>
+</div>
+</div>
+<!-- Item Card 4 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-dark border border-white/10 group">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A black backpack sitting on a bench in a park." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkhvDiJGR8QfpILCjMjMk7IqKbnxTIzSx89pNANyGv0SciKZPc7r2OWWemB8AEGy-LPr-RORxFcrxJhcNlBTNWZ82LPZFpPz2vHbP3pnUkFJaO-qXL6zDvp-bf_wSFWjy7InGTkWkHpqwgjL_H8EaYHmi-2kEkpJIubm_ehT3lJe7WpsK6h5N7onneXFluwM7ub4bVu7ROnVWf7djl7i1XJJSocM9QDx2dQ6fRqtKeu0sc-DmYwr7t4UXkCDs6anJsuHRWF4bk-e7D"/>
+<div class="absolute top-3 right-3">
+<span class="inline-block rounded-full bg-found-green/80 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white">ENCONTRADO</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 p-5">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white mb-1">Mochila Preta</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/20 px-2 py-1 rounded">Outros</span>
+</div>
+<p class="text-sm text-text-secondary-dark mt-2 mb-4 flex-1">Mochila da marca "Dell" deixada em um banco na praça de alimentação. Contém um... <a class="text-primary font-semibold hover:underline" href="#">Ver mais...</a></p>
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors">Ver Detalhes</button>
+</div>
+</div>
+<!-- Item Card 5 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-dark border border-white/10 group">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A pair of black wireless headphones on a yellow background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz2h-VWTRsXpW-B0lmRDbHbxh2PcTemBSWF351xomyIMr_KZnFyxuzJd9Xsr-1C-aJSOOZJcr6jL7cRhYzIulTmiQSzk1sdbMgbfAwokc6G46kqGXeq5WbrQHCFZv9MKXqon5TxpSw5-v39NrH42DUpLEcy5215UQ1rBp25drcyNuH8KKb9uEhnaAb0RVxtPMidywIjv2-SQT6mBkCgMHiq0PWDa8jgUTGfbYNI5W1zsv5DNZbykLKxVWeNevY_liePxTOftIy-giy"/>
+<div class="absolute top-3 right-3">
+<span class="inline-block rounded-full bg-lost-red/80 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white">PERDIDO</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 p-5">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white mb-1">Fone de Ouvido Sony</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/20 px-2 py-1 rounded">Eletrônicos</span>
+</div>
+<p class="text-sm text-text-secondary-dark mt-2 mb-4 flex-1">Perdi meu headphone preto modelo WH-1000XM4. Estava na case original... <a class="text-primary font-semibold hover:underline" href="#">Ver mais...</a></p>
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors">Ver Detalhes</button>
+</div>
+</div>
+<!-- Item Card 6 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-dark border border-white/10 group">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A blue water bottle with a metallic cap." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkjnzzj9-RZKBKgDOI58P4Eww7kZb4ySRwE8vIfG8oIDGhyvAZ1N8AhNv4ItGmVw4sPtji_nYLx7nfUOPe3FAocnfQ8LzEet3LHRoC1lbV2O0H14IN-3thfcq9xjomIJmLBHatCiZnX9ST4ysmszCndwCZGZZszXgFST9p7lc3MqYmOnovRoEpT7Ya1kj70G7QN1IAjW0PvWGYNsdpAOeafVDntJZrM49wQ5RhQ9cdTa5X2yH7VJKtIP6kFZhQDAsB1_CbuJPJSVTb"/>
+<div class="absolute top-3 right-3">
+<span class="inline-block rounded-full bg-found-green/80 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white">ENCONTRADO</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 p-5">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white mb-1">Garrafa de Água</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/20 px-2 py-1 rounded">Outros</span>
+</div>
+<p class="text-sm text-text-secondary-dark mt-2 mb-4 flex-1">Garrafa azul encontrada na academia, próximo aos armários. Está cheia... <a class="text-primary font-semibold hover:underline" href="#">Ver mais...</a></p>
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors">Ver Detalhes</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 flex h-16 items-center justify-center gap-3 overflow-hidden rounded-full bg-primary pl-6 pr-6 text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl">
+<span class="material-symbols-outlined text-2xl">add</span>
+<span class="text-base font-bold">Publicar Novo Item</span>
+</button>
+</div>
+</body></html>

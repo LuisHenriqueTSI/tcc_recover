@@ -74,28 +74,16 @@ export default function NotificationBell() {
       {/* Botão do sino */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-white hover:text-blue-400 transition-colors"
+        className="flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-surface-dark text-text-secondary-dark hover:bg-white/10 hover:text-white transition-all relative"
         aria-label="Notificações"
+        title="Notificações"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
-        </svg>
+        <span className="material-symbols-outlined text-xl">notifications</span>
         
         {/* Badge com contador */}
         {notificationCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-            {notificationCount}
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+            {notificationCount > 9 ? '9+' : notificationCount}
           </span>
         )}
       </button>
@@ -109,30 +97,30 @@ export default function NotificationBell() {
             onClick={() => setIsOpen(false)}
           />
           
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-20 max-h-96 overflow-y-auto">
-            <div className="p-4 border-b border-gray-200">
+          <div className="absolute right-0 mt-2 w-80 bg-surface-dark border border-white/10 rounded-lg shadow-xl z-20 max-h-96 overflow-y-auto">
+            <div className="p-4 border-b border-white/10">
               <h3 className="font-bold text-lg text-primary">
                 Notificações {notificationCount > 0 && `(${notificationCount})`}
               </h3>
             </div>
 
             {notificationCount === 0 ? (
-              <div className="p-6 text-center text-neutral-dark">
+              <div className="p-6 text-center text-text-secondary-dark">
                 <div className="text-4xl mb-2">🔔</div>
                 <p>Nenhuma notificação no momento</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-white/10">
                 {/* Mensagens não lidas */}
                 {unreadCount > 0 && (
-                  <div className="p-4 bg-blue-50 hover:bg-blue-100 cursor-pointer" onClick={() => { window.location.href = '/chat'; setIsOpen(false); }}>
+                  <div className="p-4 bg-primary/20 hover:bg-primary/30 cursor-pointer transition-colors" onClick={() => { window.location.href = '/chat'; setIsOpen(false); }}>
                     <div className="flex items-start gap-2">
                       <span className="text-2xl">💬</span>
                       <div className="flex-1">
                         <h4 className="font-bold text-primary mb-1">
                           {unreadCount === 1 ? 'Nova mensagem' : `${unreadCount} novas mensagens`}
                         </h4>
-                        <p className="text-sm text-neutral-dark">
+                        <p className="text-sm text-text-secondary-dark">
                           Clique para ver suas mensagens
                         </p>
                       </div>
@@ -142,17 +130,17 @@ export default function NotificationBell() {
                 
                 {/* Itens pendentes de resolução */}
                 {pendingItems.map(item => (
-                  <div key={item.id} className="p-4 hover:bg-gray-50">
+                  <div key={item.id} className="p-4 hover:bg-white/10 transition-colors">
                     <div className="flex items-start gap-2 mb-3">
                       <span className="text-2xl">🔍</span>
                       <div className="flex-1">
                         <h4 className="font-bold text-primary mb-1">
                           Você encontrou seu item?
                         </h4>
-                        <p className="text-sm text-neutral-dark">
+                        <p className="text-sm text-text-primary-dark">
                           <span className="font-semibold">{item.title}</span>
                           {item.location && (
-                            <span className="text-xs block text-gray-500 mt-1">
+                            <span className="text-xs block text-text-secondary-dark mt-1">
                               📍 {item.location}
                             </span>
                           )}
@@ -171,7 +159,7 @@ export default function NotificationBell() {
                       <button
                         onClick={() => handleNo(item)}
                         disabled={loading}
-                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-neutral-dark font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
+                        className="flex-1 bg-white/10 hover:bg-white/20 text-text-primary-dark font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
                       >
                         Ainda não
                       </button>
