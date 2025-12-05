@@ -114,7 +114,7 @@ export default function Header({ showSearch = true, searchValue = '', onSearchCh
 
                 <button
                   onClick={() => {
-                    navigate('/edit-profile');
+                    navigate('/profile/edit');
                     setProfileMenuOpen(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors"

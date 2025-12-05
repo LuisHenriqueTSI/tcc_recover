@@ -1,4 +1,4 @@
-import Header from '../components/Header';
+import SimpleSidebar from '../components/SimpleSidebar';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { registerItem, updateItem, analyzeImage, saveItemPhoto } from '../services/items';
@@ -69,16 +69,13 @@ export default function RegisterItem() {
   const [currentStep, setCurrentStep] = useState(1);
   const [success, setSuccess] = useState(false);
   const [createdItem, setCreatedItem] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (!user) {
     return (
       <div className="min-h-screen bg-background-dark flex flex-col">
-        <Header 
-          showSearch={false}
-          searchValue=""
-          onSearchChange={() => {}}
-        />
-        <div className="pt-32 px-10 pb-10 text-center text-white">
+        <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+        <div className={`p-10 flex items-center justify-center transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
           Faça login para registrar itens
         </div>
       </div>
@@ -175,12 +172,8 @@ export default function RegisterItem() {
   if (!itemType) {
     return (
       <div className="min-h-screen bg-background-dark flex flex-col">
-        <Header 
-          showSearch={false}
-          searchValue=""
-          onSearchChange={() => {}}
-        />
-        <main className="flex flex-1 flex-col items-center justify-center gap-10 px-4 py-10 sm:px-8 pt-32">
+        <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+        <main className={`flex flex-1 flex-col items-center justify-center gap-10 px-4 py-10 sm:px-8 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
           <div className="text-center">
             <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] sm:text-5xl">Seleção de Tipo de Item</h1>
             <p className="text-[#9da6b9] text-lg font-normal leading-normal mt-3 max-w-2xl">Para começar, escolha a categoria que melhor descreve o item que você deseja reportar.</p>
@@ -219,12 +212,8 @@ export default function RegisterItem() {
   if (success) {
     return (
       <div className="min-h-screen bg-background-dark flex flex-col">
-        <Header 
-          showSearch={false}
-          searchValue=""
-          onSearchChange={() => {}}
-        />
-        <div className="pt-32 px-10 pb-10">
+        <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+        <div className={`p-10 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
           <div className="max-w-4xl mx-auto">
             <div className="bg-surface-dark rounded-xl p-8 border border-white/10 text-center">
               <div className="text-6xl mb-4">✅</div>
@@ -282,12 +271,8 @@ export default function RegisterItem() {
   // Main form
   return (
     <div className="min-h-screen bg-background-dark flex flex-col">
-      <Header 
-        showSearch={false}
-        searchValue=""
-        onSearchChange={() => {}}
-      />
-      <div className="pt-32 px-10 pb-10">
+      <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+      <div className={`p-10 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">

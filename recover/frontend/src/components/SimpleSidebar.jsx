@@ -3,17 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import NotificationBell from './NotificationBell';
 
-export default function Sidebar({ 
-  statusFilter, 
-  onStatusChange, 
-  categoryFilter, 
-  onCategoryChange, 
-  showMyItems, 
-  onMyItemsChange,
-  searchValue = '',
-  onSearchChange,
-  onCollapseChange
-}) {
+export default function SimpleSidebar({ onCollapseChange }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -72,23 +62,6 @@ export default function Sidebar({
           >
             <span className="material-symbols-outlined text-xl">chevron_left</span>
           </button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-4">
-          <label className="flex flex-col w-full">
-            <div className="relative flex w-full flex-1 items-stretch">
-              <div className="text-text-secondary-dark absolute inset-y-0 left-0 flex items-center justify-center pl-4">
-                <span className="material-symbols-outlined text-xl">search</span>
-              </div>
-              <input
-                value={searchValue}
-                onChange={e => onSearchChange?.(e.target.value)}
-                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-surface-dark h-11 placeholder:text-text-secondary-dark pl-11 pr-4 text-sm font-normal leading-normal"
-                placeholder="Buscar itens..."
-              />
-            </div>
-          </label>
         </div>
 
         {/* Action Buttons */}
@@ -207,53 +180,34 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Filters Section */}
-      <div className="flex-1 px-6 py-6 space-y-6">
-        <div className="text-text-secondary-dark text-xs font-semibold uppercase tracking-wider mb-4">Filtros</div>
+      {/* Navigation Section */}
+      <div className="flex-1 px-6 py-6 space-y-2">
+        <div className="text-text-secondary-dark text-xs font-semibold uppercase tracking-wider mb-4">Menu</div>
+        
+        <button
+          onClick={() => navigate('/home')}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-surface-dark transition-colors"
+        >
+          <span className="material-symbols-outlined text-xl">home</span>
+          <span>Início</span>
+        </button>
 
-        {/* Status Filter */}
-        <div>
-          <label className="text-text-secondary-dark text-sm font-semibold mb-3 block">Status</label>
-          <select
-            value={statusFilter}
-            onChange={e => onStatusChange(e.target.value)}
-            className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-surface-dark h-10 px-4 text-sm"
-          >
-            <option value="">Todos</option>
-            <option value="perdido">Perdido</option>
-            <option value="achado">Achado</option>
-          </select>
-        </div>
+        <button
+          onClick={() => navigate('/register-item')}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-surface-dark transition-colors"
+        >
+          <span className="material-symbols-outlined text-xl">add_circle</span>
+          <span>Publicar Item</span>
+        </button>
 
-        {/* Category Filter */}
-        <div>
-          <label className="text-text-secondary-dark text-sm font-semibold mb-3 block">Categoria</label>
-          <select
-            value={categoryFilter}
-            onChange={e => onCategoryChange(e.target.value)}
-            className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-surface-dark h-10 px-4 text-sm"
-          >
-            <option value="">Todas</option>
-            <option value="electronics">Eletrônicos</option>
-            <option value="documents">Documentos</option>
-            <option value="keys">Chaves</option>
-            <option value="accessories">Acessórios</option>
-            <option value="other">Outros</option>
-          </select>
-        </div>
-
-        {/* My Items Checkbox */}
-        <label className="flex items-center gap-3 cursor-pointer hover:bg-surface-dark/50 p-3 rounded-lg transition">
-          <input
-            type="checkbox"
-            checked={showMyItems}
-            onChange={e => onMyItemsChange(e.target.checked)}
-            className="w-5 h-5 rounded border-white/10 text-primary focus:ring-2 focus:ring-primary/50 cursor-pointer"
-          />
-          <span className="text-white font-medium">Meus itens</span>
-        </label>
+        <button
+          onClick={() => navigate('/chat')}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-surface-dark transition-colors"
+        >
+          <span className="material-symbols-outlined text-xl">chat</span>
+          <span>Mensagens</span>
+        </button>
       </div>
     </aside>
   );
 }
-

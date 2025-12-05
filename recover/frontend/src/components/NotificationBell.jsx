@@ -74,7 +74,7 @@ export default function NotificationBell() {
       {/* Botão do sino */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-surface-dark text-text-secondary-dark hover:bg-white/10 hover:text-white transition-all relative"
+        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-surface-dark text-text-secondary-dark hover:bg-white/10 hover:text-white transition-all relative"
         aria-label="Notificações"
         title="Notificações"
       >
@@ -82,7 +82,7 @@ export default function NotificationBell() {
         
         {/* Badge com contador */}
         {notificationCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full border-2 border-background-dark">
             {notificationCount > 9 ? '9+' : notificationCount}
           </span>
         )}
@@ -97,30 +97,30 @@ export default function NotificationBell() {
             onClick={() => setIsOpen(false)}
           />
           
-          <div className="absolute right-0 mt-2 w-80 bg-surface-dark border border-white/10 rounded-lg shadow-xl z-20 max-h-96 overflow-y-auto">
-            <div className="p-4 border-b border-white/10">
-              <h3 className="font-bold text-lg text-primary">
+          <div className="absolute right-0 mt-2 w-72 bg-[#1a1f2e] border border-white/10 rounded-lg shadow-xl z-20 max-h-80 overflow-y-auto">
+            <div className="px-3 py-2.5 border-b border-white/10">
+              <h3 className="font-semibold text-base text-primary">
                 Notificações {notificationCount > 0 && `(${notificationCount})`}
               </h3>
             </div>
 
             {notificationCount === 0 ? (
-              <div className="p-6 text-center text-text-secondary-dark">
-                <div className="text-4xl mb-2">🔔</div>
-                <p>Nenhuma notificação no momento</p>
+              <div className="p-4 text-center text-text-secondary-dark">
+                <div className="text-3xl mb-1">🔔</div>
+                <p className="text-sm">Nenhuma notificação</p>
               </div>
             ) : (
               <div className="divide-y divide-white/10">
                 {/* Mensagens não lidas */}
                 {unreadCount > 0 && (
-                  <div className="p-4 bg-primary/20 hover:bg-primary/30 cursor-pointer transition-colors" onClick={() => { window.location.href = '/chat'; setIsOpen(false); }}>
+                  <div className="p-3 bg-primary/20 hover:bg-primary/30 cursor-pointer transition-colors" onClick={() => { window.location.href = '/chat'; setIsOpen(false); }}>
                     <div className="flex items-start gap-2">
-                      <span className="text-2xl">💬</span>
+                      <span className="text-xl">💬</span>
                       <div className="flex-1">
-                        <h4 className="font-bold text-primary mb-1">
+                        <h4 className="font-semibold text-primary text-sm mb-0.5">
                           {unreadCount === 1 ? 'Nova mensagem' : `${unreadCount} novas mensagens`}
                         </h4>
-                        <p className="text-sm text-text-secondary-dark">
+                        <p className="text-xs text-text-secondary-dark">
                           Clique para ver suas mensagens
                         </p>
                       </div>
@@ -130,17 +130,17 @@ export default function NotificationBell() {
                 
                 {/* Itens pendentes de resolução */}
                 {pendingItems.map(item => (
-                  <div key={item.id} className="p-4 hover:bg-white/10 transition-colors">
-                    <div className="flex items-start gap-2 mb-3">
-                      <span className="text-2xl">🔍</span>
+                  <div key={item.id} className="p-3 hover:bg-white/10 transition-colors">
+                    <div className="flex items-start gap-2 mb-2">
+                      <span className="text-xl">🔍</span>
                       <div className="flex-1">
-                        <h4 className="font-bold text-primary mb-1">
+                        <h4 className="font-semibold text-primary text-sm mb-0.5">
                           Você encontrou seu item?
                         </h4>
-                        <p className="text-sm text-text-primary-dark">
-                          <span className="font-semibold">{item.title}</span>
+                        <p className="text-xs text-text-primary-dark">
+                          <span className="font-medium">{item.title}</span>
                           {item.location && (
-                            <span className="text-xs block text-text-secondary-dark mt-1">
+                            <span className="text-xs block text-text-secondary-dark mt-0.5">
                               📍 {item.location}
                             </span>
                           )}
@@ -152,14 +152,14 @@ export default function NotificationBell() {
                       <button
                         onClick={() => handleYes(item)}
                         disabled={loading}
-                        className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
+                        className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-1.5 px-3 rounded text-sm transition-colors disabled:opacity-50"
                       >
                         {loading ? 'Salvando...' : 'Sim! 🎉'}
                       </button>
                       <button
                         onClick={() => handleNo(item)}
                         disabled={loading}
-                        className="flex-1 bg-white/10 hover:bg-white/20 text-text-primary-dark font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
+                        className="flex-1 bg-white/10 hover:bg-white/20 text-text-primary-dark font-medium py-1.5 px-3 rounded text-sm transition-colors disabled:opacity-50"
                       >
                         Ainda não
                       </button>

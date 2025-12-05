@@ -1,4 +1,4 @@
-import Header from '../components/Header'
+import SimpleSidebar from '../components/SimpleSidebar'
 import { useAuth } from '../contexts/AuthContext'
 import { useEffect, useState, useRef } from 'react'
 
@@ -8,6 +8,7 @@ export default function Chat() {
   const [loadingInbox, setLoadingInbox] = useState(false);
   const [inboxError, setInboxError] = useState('');
   const [nameMap, setNameMap] = useState({}); // cache sender_id -> name
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [message, setMessage] = useState('');
   const [receiverId, setReceiverId] = useState('');
@@ -221,10 +222,10 @@ export default function Chat() {
 
   return (
     <div className="flex h-screen w-full bg-background-dark">
-      <Header showSearch={false} />
+      <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
       
       {/* Main Content */}
-      <main className="flex flex-1 flex-col pt-20">
+      <main className={`flex flex-1 flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
         {/* Chat Interface */}
         <div className="grid grid-cols-1 md:grid-cols-[380px_1fr] flex-1 overflow-hidden">
           {/* Conversations Panel */}

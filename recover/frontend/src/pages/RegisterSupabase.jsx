@@ -1,4 +1,4 @@
-import Header from '../components/Header';
+import SimpleSidebar from '../components/SimpleSidebar';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signUp, signIn } from '../services/supabaseAuth';
@@ -47,10 +47,12 @@ export default function RegisterSupabase() {
     setLoading(false);
   }
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
     <div className="min-h-screen bg-background-dark">
-      <Header showSearch={false} />
-      <div className="flex items-center justify-center p-4 pt-32">
+      <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+      <div className={`flex items-center justify-center p-4 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
         <div className="max-w-md w-full bg-surface-dark rounded-xl p-8 border border-white/10">
         <h2 className="text-3xl font-bold mb-6 text-white text-center">📝 Registrar Usuário</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

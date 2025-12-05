@@ -1,4 +1,3 @@
-import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import ShareButton from '../components/ShareButton'
 import { useNavigate } from 'react-router-dom'
@@ -26,6 +25,7 @@ export default function Home() {
   const [ownerSocialMedia, setOwnerSocialMedia] = useState({});
   const [expandedCards, setExpandedCards] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:8000/publications/')
@@ -154,22 +154,20 @@ export default function Home() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-background-dark">
-      <Header 
-        showSearch={true}
+      <Sidebar 
         searchValue={search}
         onSearchChange={setSearch}
-      />
-      <Sidebar 
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
         categoryFilter={categoryFilter}
         onCategoryChange={setCategoryFilter}
         showMyItems={mineOnly}
         onMyItemsChange={setMineOnly}
+        onCollapseChange={setSidebarCollapsed}
       />
 
       {/* Main content */}
-      <main className="flex-1 lg:ml-80 p-10 pt-32">
+      <main className={`flex-1 p-10 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>

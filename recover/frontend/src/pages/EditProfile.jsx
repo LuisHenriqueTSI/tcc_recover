@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Card from '../components/Card';
-import Input from '../components/Input';
-import Button from '../components/Button';
-import CancelButton from '../components/CancelButton';
+import SimpleSidebar from '../components/SimpleSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { getUser as getUserProfile } from '../services/user';
 
@@ -21,6 +18,7 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -116,42 +114,175 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-light flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
-        <h2 className="text-2xl font-heading font-bold text-primary mb-6">Editar Perfil</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          
-          {/* Seção de Informações Básicas */}
-          <div className="border-b pb-4">
-            <h3 className="text-lg font-bold text-primary mb-3">Informações Básicas</h3>
-            <Input label="Nome" required value={name} onChange={e => setName(e.target.value)} />
-            <Input label="Email" type="email" value={email} disabled />
+    <div className="relative flex min-h-screen w-full flex-col bg-background-dark">
+      <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+      
+      <main className={`flex flex-1 justify-center px-4 py-8 sm:px-6 md:py-12 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
+        <div className="w-full max-w-2xl">
+          <div className="mb-8">
+            <h2 className="text-4xl font-black tracking-tighter text-text-light">Edição de Perfil</h2>
+            <p className="mt-2 text-text-light/70">Atualize suas informações pessoais e de contato.</p>
           </div>
 
-          {/* Seção de Contato */}
-          <div className="border-b pb-4">
-            <h3 className="text-lg font-bold text-primary mb-3">Contato</h3>
-            <Input label="Telefone / WhatsApp" type="tel" placeholder="+55 11 99999-9999" value={phone} onChange={e => setPhone(e.target.value)} />
-            <Input label="WhatsApp" placeholder="55119999999999" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
-          </div>
+          <div className="rounded-xl border border-surface-dark bg-surface-dark/50">
+            {/* Avatar Section */}
+            <div className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
+              <div className="relative h-32 w-32">
+                <div 
+                  className="h-full w-full rounded-full bg-cover bg-center"
+                  style={{ 
+                    backgroundImage: user?.avatar 
+                      ? `url("${user.avatar}")` 
+                      : 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJ5Nfrwll3vgByg29e4RlsXLLlhYSq0zyIePQoXalVVdP1_bUmaTL0BpIZOV1jeSGZLS82JPVqVmW0y_2yUHYHwoUYrMdskJho2tnIQm7udpg01LUtUg7_ZF8rnxjz-CtcbqYsQUYIjtHxf1zlyaiGK_T4UYzi_grQvw1y_wSKnOaU_MNONOZ6dmpMie11MpP2dUAGnOotTAMC-LOCoRFJzQKzn0-es9puz6wYdlQZTaz9EWNODWWJKRtoz3bWsuSnm1aAAtlS1R2i")'
+                  }}
+                />
+                <button 
+                  type="button"
+                  className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface-dark bg-primary text-white transition-transform hover:scale-110"
+                >
+                  <span className="material-symbols-outlined text-xl">edit</span>
+                </button>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-text-light">Alterar foto</p>
+                <p className="text-sm text-text-light/60">PNG ou JPG (máx. 800x800px)</p>
+              </div>
+            </div>
 
-          {/* Seção de Redes Sociais */}
-          <div>
-            <h3 className="text-lg font-bold text-primary mb-3">Redes Sociais</h3>
-            <Input label="Instagram" placeholder="@seu_usuario" value={instagram} onChange={e => setInstagram(e.target.value)} />
-            <Input label="Twitter" placeholder="@seu_usuario" value={twitter} onChange={e => setTwitter(e.target.value)} />
-            <Input label="Facebook" placeholder="seu.usuario" value={facebook} onChange={e => setFacebook(e.target.value)} />
-            <Input label="LinkedIn" placeholder="seu-usuario" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
-          </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6 border-t border-surface-dark p-6 sm:p-8">
+              {/* Nome */}
+              <div className="grid grid-cols-1 gap-6">
+                <label className="flex flex-col">
+                  <span className="pb-2 text-sm font-medium text-text-light/90">Nome</span>
+                  <input 
+                    className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0"
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Seu nome completo"
+                  />
+                </label>
+              </div>
 
-          <div className="flex gap-2 mt-4">
-            <Button variant="primary" type="submit" disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</Button>
-            <CancelButton to="/profile" />
+              {/* Email (disabled) */}
+              <label className="flex flex-col">
+                <span className="pb-2 text-sm font-medium text-text-light/90">E-mail</span>
+                <div className="relative flex w-full items-center">
+                  <input 
+                    className="form-input h-12 w-full cursor-not-allowed rounded-lg border-2 border-disabled-dark/50 bg-disabled-dark/30 py-3 pl-4 pr-12 text-base text-disabled-dark placeholder:text-disabled-dark"
+                    disabled
+                    type="email"
+                    value={email}
+                  />
+                  <span className="material-symbols-outlined absolute right-4 text-2xl text-disabled-dark">lock</span>
+                </div>
+              </label>
+
+              {/* Telefone e WhatsApp */}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <label className="flex flex-col">
+                  <span className="pb-2 text-sm font-medium text-text-light/90">Telefone</span>
+                  <input 
+                    className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0"
+                    placeholder="(11) 99999-9999"
+                    type="tel"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                  />
+                </label>
+                <label className="flex flex-col">
+                  <span className="pb-2 text-sm font-medium text-text-light/90">WhatsApp</span>
+                  <input 
+                    className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark px-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-primary focus:outline-none focus:ring-0"
+                    placeholder="(11) 99999-9999"
+                    type="tel"
+                    value={whatsapp}
+                    onChange={e => setWhatsapp(e.target.value)}
+                  />
+                </label>
+              </div>
+
+              {/* Redes Sociais */}
+              <div>
+                <p className="pb-2 text-sm font-medium text-text-light/90">Redes Sociais (Opcional)</p>
+                <div className="space-y-4">
+                  <div className="relative flex w-full items-center">
+                    <span className="material-symbols-outlined absolute left-4 text-2xl text-disabled-dark">alternate_email</span>
+                    <input 
+                      className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark py-3 pl-12 pr-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-secondary focus:outline-none focus:ring-0"
+                      placeholder="usuário do Instagram"
+                      type="text"
+                      value={instagram}
+                      onChange={e => setInstagram(e.target.value)}
+                    />
+                  </div>
+                  <div className="relative flex w-full items-center">
+                    <span className="material-symbols-outlined absolute left-4 text-2xl text-disabled-dark">tag</span>
+                    <input 
+                      className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark py-3 pl-12 pr-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-secondary focus:outline-none focus:ring-0"
+                      placeholder="usuário do Twitter"
+                      type="text"
+                      value={twitter}
+                      onChange={e => setTwitter(e.target.value)}
+                    />
+                  </div>
+                  <div className="relative flex w-full items-center">
+                    <span className="material-symbols-outlined absolute left-4 text-2xl text-disabled-dark">link</span>
+                    <input 
+                      className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark py-3 pl-12 pr-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-secondary focus:outline-none focus:ring-0"
+                      placeholder="Link do perfil no Facebook"
+                      type="text"
+                      value={facebook}
+                      onChange={e => setFacebook(e.target.value)}
+                    />
+                  </div>
+                  <div className="relative flex w-full items-center">
+                    <span className="material-symbols-outlined absolute left-4 text-2xl text-disabled-dark">business_center</span>
+                    <input 
+                      className="form-input h-12 w-full rounded-lg border-2 border-surface-dark bg-background-dark py-3 pl-12 pr-4 text-base text-text-light placeholder:text-disabled-dark/80 focus:border-secondary focus:outline-none focus:ring-0"
+                      placeholder="usuário do LinkedIn"
+                      type="text"
+                      value={linkedin}
+                      onChange={e => setLinkedin(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Error/Success Messages */}
+              {error && (
+                <div className="rounded-lg bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="rounded-lg bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3">
+                  {success}
+                </div>
+              )}
+
+              {/* Buttons */}
+              <div className="flex flex-col-reverse justify-end gap-3 border-t border-surface-dark pt-6 sm:flex-row">
+                <button 
+                  className="flex h-12 w-full items-center justify-center rounded-lg bg-transparent text-sm font-bold text-text-light/80 ring-1 ring-inset ring-surface-dark transition-colors hover:bg-surface-dark/50 sm:w-auto sm:px-6"
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto sm:px-6"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-        {error && <div className="mt-2 text-red-600 text-sm text-center">{error}</div>}
-        {success && <div className="mt-2 text-green-600 text-sm text-center">{success}</div>}
-      </Card>
+        </div>
+      </main>
     </div>
   );
 }

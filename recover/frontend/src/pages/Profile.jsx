@@ -1,10 +1,12 @@
-import Header from '../components/Header';
+import { useState } from 'react';
+import SimpleSidebar from '../components/SimpleSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (!user) {
     return (
@@ -51,8 +53,8 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background-dark">
-      <Header showSearch={false} />
-      <div className="pt-32 px-10 pb-10">
+      <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
+      <div className={`p-10 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
         <div className="max-w-4xl mx-auto">
           {/* Card Principal */}
           <div className="bg-surface-dark rounded-xl p-8 border border-white/10 mb-6">
