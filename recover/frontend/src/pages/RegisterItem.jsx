@@ -148,7 +148,7 @@ export default function RegisterItem() {
       if (editingItem) {
         await updateItem(editingItem.id, item, token);
         setSuccess('Alterado com sucesso!');
-        navigate('/');
+        navigate('/home');
       } else {
         const created = await registerItem(item, token);
         if (imageFile && created && created.id) {
@@ -167,7 +167,7 @@ export default function RegisterItem() {
           }
         }
         setSuccess('Registrado com sucesso!');
-        setTimeout(() => navigate('/'), 1500);
+        setTimeout(() => navigate('/home'), 1500);
       }
     } catch (err) {
       setError(err.message);

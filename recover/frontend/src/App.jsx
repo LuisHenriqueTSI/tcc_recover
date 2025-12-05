@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LogoutButton from './components/LogoutButton';
-import ItemResolutionNotification from './components/ItemResolutionNotification';
+import NotificationBell from './components/NotificationBell';
+import Welcome from './pages/Welcome';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import RegisterItem from './pages/RegisterItem';
@@ -35,15 +36,15 @@ function AppContent() {
         <div className="flex items-center gap-4">
           <Link to="/" className="text-2xl font-heading font-bold text-primary hover:underline">Recover</Link>
           <div className="hidden md:flex items-center gap-4">
-            {/* link Mapa removido do cabeçalho: mapa agora é mostrado nos cartões de item */}
+            {user && <Link to="/home" className="text-primary font-semibold hover:underline">Buscar Itens</Link>}
             {user && <Link to="/register-item" className="text-accent font-semibold hover:underline">Registrar Item</Link>}
           </div>
         </div>
         <div className="hidden md:flex items-center gap-4">
           {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline">Painel</Link>}
-          {/* perfil removido do cabeçalho: o painel do usuário contém a opção de editar o perfil */}
           {user && <Link to="/chat" className="text-secondary font-semibold hover:underline">Chat</Link>}
           {user && isAdmin && <Link to="/admin" className="text-accent font-semibold hover:underline">Admin</Link>}
+          {user && <NotificationBell />}
           {!user && <Link to="/login" className="text-secondary font-semibold hover:underline">Login</Link>}
           {!user && <Link to="/register" className="text-primary font-semibold hover:underline">Registrar</Link>}
           {user && <LogoutButton />}
@@ -55,11 +56,9 @@ function AppContent() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="absolute top-full left-0 w-full bg-white shadow-md z-50 flex flex-col gap-2 p-4 md:hidden animate-slide-down">
-            {/* Buscar link removed from mobile menu */}
-            {/* link Mapa removido do menu mobile: mapa agora é mostrado nos cartões de item */}
+            {user && <Link to="/home" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Buscar Itens</Link>}
             {user && <Link to="/register-item" className="text-accent font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Registrar Item</Link>}
             {user && <Link to="/dashboard" className="text-primary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Painel</Link>}
-            {/* perfil removido do menu mobile: o painel do usuário contém a opção de editar o perfil */}
             {user && <Link to="/chat" className="text-secondary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Chat</Link>}
             {user && isAdmin && <Link to="/admin" className="text-accent font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Admin</Link>}
             {!user && <Link to="/login" className="text-secondary font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Login</Link>}
@@ -69,7 +68,8 @@ function AppContent() {
         )}
       </nav>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Welcome />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/login" element={<LoginSupabase />} />
         <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/register-item" element={<RequireAuth><RegisterItem /></RequireAuth>} />
@@ -82,8 +82,6 @@ function AppContent() {
         <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
         <Route path="/register" element={<RegisterSupabase />} />
       </Routes>
-      {/* Notificação de resolução de itens - aparece apenas para usuários autenticados */}
-      {user && <ItemResolutionNotification />}
     </Router>
   );
 }
