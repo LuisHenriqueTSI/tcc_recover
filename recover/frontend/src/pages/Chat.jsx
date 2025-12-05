@@ -34,32 +34,7 @@ export default function Chat() {
         const msgs = json || [];
         setInbox(msgs);
         
-        // Marcar mensagens não lidas como lidas
-        const unreadMessages = msgs.filter(m => m.read === false);
-        console.log('[Chat] Total messages:', msgs.length, 'Unread:', unreadMessages.length);
-        if (unreadMessages.length > 0) {
-          // Usar Promise.all para garantir que todas as requisições sejam completadas
-          await Promise.all(unreadMessages.map(async (msg) => {
-            try {
-              console.log('[Chat] Marking message as read:', msg.id);
-              const markReadResponse = await fetch(`http://localhost:8000/chat/${msg.id}/mark-read`, {
-                method: 'PATCH',
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              if (markReadResponse.ok) {
-                console.log('[Chat] Message marked as read:', msg.id);
-              } else {
-                console.error('[Chat] Failed to mark message as read:', msg.id, markReadResponse.status);
-              }
-            } catch (e) {
-              console.error('[Chat] Erro ao marcar mensagem como lida:', msg.id, e);
-            }
-          }));
-          console.log('[Chat] All messages marked as read');
-          
-          // Disparar evento customizado para atualizar o contador imediatamente
-          window.dispatchEvent(new CustomEvent('messages-read'));
-        }
+        console.log('[Chat] Total messages:', msgs.length, 'Unread:', msgs.filter(m => m.read === false).length);
         
         // fetch sender names for unique sender_ids
         const ids = Array.from(new Set(msgs.map(m => String(m.sender_id)).filter(Boolean)));
@@ -85,6 +60,36 @@ export default function Chat() {
     }
     if (user) loadInbox();
   }, [user]);
+
+  // Marcar mensagem como lida quando clicar nela
+  async function handleMarkAsRead(msg) {
+    if (msg.read) return; // Já está lida
+    
+    const token = localStorage.getItem('recover_token');
+    if (!token) return;
+    
+    try {
+      console.log('[Chat] Marking message as read:', msg.id);
+      const response = await fetch(`http://localhost:8000/chat/${msg.id}/mark-read`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        console.log('[Chat] Message marked as read:', msg.id);
+        // Atualizar a mensagem localmente
+        setInbox(prevInbox => 
+          prevInbox.map(m => m.id === msg.id ? { ...m, read: true, read_at: new Date().toISOString() } : m)
+        );
+        // Disparar evento para atualizar o contador
+        window.dispatchEvent(new CustomEvent('messages-read'));
+      } else {
+        console.error('[Chat] Failed to mark message as read:', response.status);
+      }
+    } catch (e) {
+      console.error('[Chat] Error marking message as read:', e);
+    }
+  }
 
   async function handleSend(e) {
     e.preventDefault();
@@ -156,7 +161,11 @@ export default function Chat() {
           ) : (
             <ul className="space-y-2 h-48 overflow-y-auto p-1">
               {inbox.map(m => (
-                <li key={m.id} className={`border rounded p-2 ${m.read === false ? 'bg-blue-50 border-blue-300' : 'bg-white'}`}>
+                <li 
+                  key={m.id} 
+                  className={`border rounded p-2 cursor-pointer transition-colors ${m.read === false ? 'bg-blue-50 border-blue-300 hover:bg-blue-100' : 'bg-white hover:bg-gray-50'}`}
+                  onClick={() => handleMarkAsRead(m)}
+                >
                   <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
                             <div className="text-sm text-neutral-dark mb-1 flex items-center gap-2">
@@ -173,7 +182,10 @@ export default function Chat() {
                     <div className="flex-shrink-0">
                       <button
                         className="text-sm text-primary hover:underline"
-                        onClick={() => setReplyTo({ id: m.id, sender_id: m.sender_id, content: m.content, item_id: m.item_id, item_title: m.item_title })}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Evitar que marque como lida ao clicar em responder
+                          setReplyTo({ id: m.id, sender_id: m.sender_id, content: m.content, item_id: m.item_id, item_title: m.item_title });
+                        }}
                       >Responder</button>
                     </div>
                   </div>
