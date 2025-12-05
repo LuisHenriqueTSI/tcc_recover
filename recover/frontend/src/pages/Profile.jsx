@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SimpleSidebar from '../components/SimpleSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,71 @@ export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [publishedItems, setPublishedItems] = useState([]);
+  const [resolvedItems, setResolvedItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserItems();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // Recarregar itens toda vez que a página é visitada
+    return () => {
+      // Cleanup
+    };
+  }, []);
+
+  async function fetchUserItems() {
+    try {
+      const token = localStorage.getItem('recover_token');
+      console.clear();
+      console.log('[Profile] ===== FETCHING USER ITEMS =====');
+      console.log('[Profile] Fetching user items with token:', token ? 'present' : 'missing');
+      
+      if (!token) {
+        console.error('[Profile] Token não disponível');
+        setLoading(false);
+        return;
+      }
+
+      // Usar o novo endpoint /my-items que requer autenticação
+      const url = 'http://localhost:8000/publications/my-items';
+      console.log('[Profile] URL:', url);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log('[Profile] Response status:', response.status);
+      
+      if (response.ok) {
+        const userItems = await response.json();
+        console.log('[Profile] User items received:', userItems);
+        console.log('[Profile] Total items:', userItems.length);
+        
+        // Separar em publicados (ativos) e resolvidos
+        const published = userItems.filter(item => !item.resolved);
+        const resolved = userItems.filter(item => item.resolved);
+        
+        console.log('[Profile] Published:', published.length, 'Resolved:', resolved.length);
+        
+        setPublishedItems(published);
+        setResolvedItems(resolved);
+      } else {
+        console.error('[Profile] Response not OK:', response.status);
+        const errorText = await response.text();
+        console.error('[Profile] Error:', errorText);
+      }
+    } catch (error) {
+      console.error('[Profile] Erro ao buscar itens:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (!user) {
     return (
@@ -54,117 +119,173 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background-dark">
       <SimpleSidebar onCollapseChange={setSidebarCollapsed} />
-      <div className={`p-10 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
-        <div className="max-w-4xl mx-auto">
-          {/* Card Principal */}
-          <div className="bg-surface-dark rounded-xl p-8 border border-white/10 mb-6">
-            <div className="text-center mb-6">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center shadow-lg ring-2 ring-primary/50">
-                <span className="text-5xl">👤</span>
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          {/* Card Principal do Perfil */}
+          <div className="bg-surface-dark rounded-2xl overflow-hidden border border-white/10 mb-6">
+            {/* Seção do Avatar e Informações */}
+            <div className="bg-gradient-to-br from-primary/20 to-secondary/20 p-8 text-center">
+              <div className="relative inline-block mb-4">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8962e] flex items-center justify-center shadow-2xl ring-4 ring-primary/30">
+                  <span className="text-6xl text-white">👤</span>
+                </div>
               </div>
-              <h2 className="text-3xl font-bold text-text-primary-dark mb-1">{user.name}</h2>
-              <p className="text-sm text-text-secondary-dark">{user.email}</p>
-            </div>
-
-            <div className="flex justify-center">
+              <h2 className="text-3xl font-bold text-text-primary-dark mb-2">{user.name}</h2>
+              <p className="text-text-secondary-dark mb-1">Membro</p>
+              <div className="flex items-center justify-center gap-4 text-sm text-text-secondary-dark mb-6">
+                <div className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">call</span>
+                  {user.phone || '+55 11 99999-8888'}
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">chat</span>
+                  WhatsApp
+                </div>
+              </div>
               <button 
                 onClick={() => navigate('/profile/edit')}
-                className="px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold transition-colors"
+                className="px-8 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition-colors shadow-lg"
               >
-                ✏️ Editar Perfil
+                Editar Perfil
               </button>
+            </div>
+
+            {/* Seção de Redes Sociais */}
+            <div className="p-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button
+                  onClick={() => openSocialMedia('instagram', user.instagram || 'recover')}
+                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">language</span>
+                  </div>
+                  <span className="text-sm text-text-primary-dark font-medium">Website</span>
+                </button>
+
+                <button
+                  onClick={() => openSocialMedia('twitter', user.twitter || 'recover')}
+                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">alternate_email</span>
+                  </div>
+                  <span className="text-sm text-text-primary-dark font-medium">Twitter</span>
+                </button>
+
+                <button
+                  onClick={() => openSocialMedia('instagram', user.instagram || 'recover')}
+                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">photo_camera</span>
+                  </div>
+                  <span className="text-sm text-text-primary-dark font-medium">Instagram</span>
+                </button>
+
+                <button
+                  onClick={() => openSocialMedia('linkedin', user.linkedin || 'recover')}
+                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-2xl text-text-primary-dark">work</span>
+                  </div>
+                  <span className="text-sm text-text-primary-dark font-medium">LinkedIn</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Card de Redes Sociais */}
-          {hasSocialMedia && (
-            <div className="bg-surface-dark rounded-xl p-8 border border-white/10">
-              <h3 className="text-2xl font-bold text-text-primary-dark mb-6 flex items-center gap-2">
-                <span>🌐</span>
-                Minhas Redes Sociais
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {user.instagram && (
-                <button
-                  onClick={() => openSocialMedia('instagram', user.instagram)}
-                  className="p-4 rounded-lg border-2 border-pink-500/30 hover:border-pink-500/70 hover:bg-pink-500/10 transition flex items-center gap-3 group"
-                >
-                  <span className="text-3xl">📷</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-text-primary-dark group-hover:text-pink-400">Instagram</div>
-                    <div className="text-xs text-text-secondary-dark truncate">@{user.instagram.replace('@', '')}</div>
-                  </div>
-                </button>
-              )}
-
-              {user.twitter && (
-                <button
-                  onClick={() => openSocialMedia('twitter', user.twitter)}
-                  className="p-4 rounded-lg border-2 border-sky-500/30 hover:border-sky-500/70 hover:bg-sky-500/10 transition flex items-center gap-3 group"
-                >
-                  <span className="text-3xl">𝕏</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-text-primary-dark group-hover:text-sky-400">Twitter/X</div>
-                    <div className="text-xs text-text-secondary-dark truncate">@{user.twitter.replace('@', '')}</div>
-                  </div>
-                </button>
-              )}
-
-              {user.facebook && (
-                <button
-                  onClick={() => openSocialMedia('facebook', user.facebook)}
-                  className="p-4 rounded-lg border-2 border-blue-500/30 hover:border-blue-500/70 hover:bg-blue-500/10 transition flex items-center gap-3 group"
-                >
-                  <span className="text-3xl">👍</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-text-primary-dark group-hover:text-blue-400">Facebook</div>
-                    <div className="text-xs text-text-secondary-dark truncate">{user.facebook}</div>
-                  </div>
-                </button>
-              )}
-
-              {user.linkedin && (
-                <button
-                  onClick={() => openSocialMedia('linkedin', user.linkedin)}
-                  className="p-4 rounded-lg border-2 border-blue-400/30 hover:border-blue-400/70 hover:bg-blue-400/10 transition flex items-center gap-3 group"
-                >
-                  <span className="text-3xl">🔗</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-text-primary-dark group-hover:text-blue-400">LinkedIn</div>
-                    <div className="text-xs text-text-secondary-dark truncate">{user.linkedin}</div>
-                  </div>
-                </button>
-              )}
-
-              {user.whatsapp && (
-                <button
-                  onClick={() => openSocialMedia('whatsapp', user.whatsapp)}
-                  className="p-4 rounded-lg border-2 border-green-500/30 hover:border-green-500/70 hover:bg-green-500/10 transition flex items-center gap-3 group"
-                >
-                  <span className="text-3xl">💬</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-text-primary-dark group-hover:text-green-400">WhatsApp</div>
-                    <div className="text-xs text-text-secondary-dark truncate">{user.whatsapp}</div>
-                  </div>
-                </button>
-              )}
-
-              {user.phone && (
-                <button
-                  onClick={() => openSocialMedia('phone', user.phone)}
-                  className="p-4 rounded-lg border-2 border-purple-500/30 hover:border-purple-500/70 hover:bg-purple-500/10 transition flex items-center gap-3 group"
-                >
-                  <span className="text-3xl">☎️</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-text-primary-dark group-hover:text-purple-400">Telefone</div>
-                    <div className="text-xs text-text-secondary-dark truncate">{user.phone}</div>
-                  </div>
-                </button>
-              )}
+          {/* Seção de Itens Publicados e Resolvidos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-surface-dark rounded-2xl p-6 border border-white/10">
+              <h3 className="text-lg font-bold text-text-primary-dark mb-4">
+                Itens Publicados ({publishedItems.length})
+              </h3>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {loading ? (
+                  <p className="text-sm text-text-secondary-dark text-center py-8">Carregando...</p>
+                ) : publishedItems.length === 0 ? (
+                  <p className="text-sm text-text-secondary-dark text-center py-8">Nenhum item publicado ainda</p>
+                ) : (
+                  publishedItems.map(item => (
+                    <div 
+                      key={item.id}
+                      onClick={() => navigate(`/item/${item.id}`)}
+                      className="p-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition-all group"
+                    >
+                      <div className="flex gap-3">
+                        {item.photo_urls && item.photo_urls.length > 0 && (
+                          <img 
+                            src={item.photo_urls[0]} 
+                            alt={item.title}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-text-primary-dark truncate group-hover:text-primary transition-colors">
+                            {item.title}
+                          </h4>
+                          <p className="text-xs text-text-secondary-dark truncate mt-1">
+                            {item.item_type === 'lost' ? '🔍 Perdido' : '✅ Encontrado'}
+                          </p>
+                          {item.location && (
+                            <p className="text-xs text-text-secondary-dark truncate mt-1">
+                              📍 {item.location}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
+
+            <div className="bg-surface-dark rounded-2xl p-6 border border-white/10">
+              <h3 className="text-lg font-bold text-text-primary-dark mb-4">
+                Itens Resolvidos ({resolvedItems.length})
+              </h3>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {loading ? (
+                  <p className="text-sm text-text-secondary-dark text-center py-8">Carregando...</p>
+                ) : resolvedItems.length === 0 ? (
+                  <p className="text-sm text-text-secondary-dark text-center py-8">Nenhum item resolvido ainda</p>
+                ) : (
+                  resolvedItems.map(item => (
+                    <div 
+                      key={item.id}
+                      onClick={() => navigate(`/item/${item.id}`)}
+                      className="p-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition-all group"
+                    >
+                      <div className="flex gap-3">
+                        {item.photo_urls && item.photo_urls.length > 0 && (
+                          <img 
+                            src={item.photo_urls[0]} 
+                            alt={item.title}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-text-primary-dark truncate group-hover:text-primary transition-colors">
+                            {item.title}
+                          </h4>
+                          <p className="text-xs text-green-400 truncate mt-1">
+                            ✨ Resolvido
+                          </p>
+                          {item.location && (
+                            <p className="text-xs text-text-secondary-dark truncate mt-1">
+                              📍 {item.location}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

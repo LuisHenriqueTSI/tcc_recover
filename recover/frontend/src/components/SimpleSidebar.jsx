@@ -126,17 +126,6 @@ export default function SimpleSidebar({ onCollapseChange }) {
 
                 <button
                   onClick={() => {
-                    navigate('/profile/edit');
-                    setProfileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-xl">edit</span>
-                  <span>Editar Perfil</span>
-                </button>
-
-                <button
-                  onClick={() => {
                     navigate('/home');
                     setProfileMenuOpen(false);
                   }}
@@ -178,35 +167,6 @@ export default function SimpleSidebar({ onCollapseChange }) {
             <span>Entrar</span>
           </button>
         )}
-      </div>
-
-      {/* Navigation Section */}
-      <div className="flex-1 px-6 py-6 space-y-2">
-        <div className="text-text-secondary-dark text-xs font-semibold uppercase tracking-wider mb-4">Menu</div>
-        
-        <button
-          onClick={() => navigate('/home')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-surface-dark transition-colors"
-        >
-          <span className="material-symbols-outlined text-xl">home</span>
-          <span>Início</span>
-        </button>
-
-        <button
-          onClick={() => navigate('/register-item')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-surface-dark transition-colors"
-        >
-          <span className="material-symbols-outlined text-xl">add_circle</span>
-          <span>Publicar Item</span>
-        </button>
-
-        <button
-          onClick={() => navigate('/chat')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-surface-dark transition-colors"
-        >
-          <span className="material-symbols-outlined text-xl">chat</span>
-          <span>Mensagens</span>
-        </button>
       </div>
     </aside>
   );

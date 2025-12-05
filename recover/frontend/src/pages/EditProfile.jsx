@@ -6,7 +6,7 @@ import { getUser as getUserProfile } from '../services/user';
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { user, login, reloadProfile } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -92,18 +92,9 @@ export default function EditProfile() {
         throw new Error(body.detail || 'Erro ao atualizar redes sociais');
       }
 
-      // Update AuthContext
-      const updatedUser = { 
-        ...(user || {}), 
-        name,
-        phone,
-        instagram,
-        twitter,
-        whatsapp,
-        facebook,
-        linkedin,
-      };
-      login(null, updatedUser);
+      // Recarregar dados do usuário do backend
+      await reloadProfile();
+      
       setSuccess('Perfil atualizado com sucesso');
       setTimeout(() => navigate('/profile'), 700);
     } catch (err) {

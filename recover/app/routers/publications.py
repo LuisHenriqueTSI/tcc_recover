@@ -33,6 +33,22 @@ def list_publications():
     return items if items else []
 
 
+# Endpoint para obter itens do usuário autenticado (DEVE ESTAR ANTES DE /{item_id})
+@router.get('/my-items')
+def get_user_items(payload: dict = Depends(get_current_user_payload)):
+    owner_sub = payload.get("sub")
+    print(f"[DEBUG] Fetching items for user: {owner_sub}")
+    try:
+        items = get_items_by_owner(str(owner_sub))
+        print(f"[DEBUG] Found {len(items) if items else 0} items for user {owner_sub}")
+        return items if items else []
+    except Exception as e:
+        print(f"[DEBUG] Error in my-items: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar itens: {str(e)}")
+
+
 # Endpoint de diagnóstico - verificar se o campo resolved existe (ANTES de /{item_id})
 @router.get('/debug/check-resolved-field')
 def check_resolved_field():
@@ -52,16 +68,22 @@ def get_resolved_statistics():
 
 
 # Endpoint para obter itens pendentes de notificação (requer autenticação) (ANTES de /{item_id})
-@router.get('/pending-notification', response_model=List[schemas.PublicationOut])
+@router.get('/pending-notification')
 def get_pending_notification_items(payload: dict = Depends(get_current_user_payload)):
     owner_sub = payload.get("sub")
     print(f"[DEBUG] Checking pending items for user: {owner_sub}")
-    items = get_items_pending_notification(str(owner_sub), minutes_threshold=1)
-    print(f"[DEBUG] Found {len(items) if items else 0} pending items")
-    if items:
-        for item in items:
-            print(f"[DEBUG] Item {item.get('id')}: created_at={item.get('created_at')}, resolved={item.get('resolved')}")
-    return items if items else []
+    try:
+        items = get_items_pending_notification(str(owner_sub), minutes_threshold=1)
+        print(f"[DEBUG] Found {len(items) if items else 0} pending items")
+        if items:
+            for item in items:
+                print(f"[DEBUG] Item {item.get('id')}: created_at={item.get('created_at')}, resolved={item.get('resolved')}")
+        return items if items else []
+    except Exception as e:
+        print(f"[DEBUG] Error in pending-notification: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar itens pendentes: {str(e)}")
 
 
 # Endpoint para pré-visualizar quais itens seriam migrados (ANTES de /{item_id})

@@ -53,6 +53,28 @@ def get_me(payload: dict = Depends(get_current_user_payload)):
 	user_id = payload.get("sub")
 	email = payload.get("email", "(email não disponível)")
 	name = payload.get("name", "Usuário")
+	
+	# Buscar informações adicionais do perfil no banco
+	try:
+		resp = supabase.table('profiles').select('*').eq('id', str(user_id)).execute()
+		if resp and getattr(resp, 'data', None) and len(resp.data) > 0:
+			profile = resp.data[0]
+			return {
+				"id": user_id,
+				"email": email,
+				"name": profile.get('name') or name,
+				"phone": profile.get('phone'),
+				"instagram": profile.get('instagram'),
+				"twitter": profile.get('twitter'),
+				"whatsapp": profile.get('whatsapp'),
+				"facebook": profile.get('facebook'),
+				"linkedin": profile.get('linkedin'),
+				"avatar": profile.get('avatar')
+			}
+	except Exception as e:
+		print(f"[DEBUG] Erro ao buscar perfil: {e}")
+	
+	# Se não encontrou no banco, retorna dados básicos do token
 	return {"id": user_id, "email": email, "name": name}
 
 
@@ -90,9 +112,19 @@ def sync_profile(body: dict, payload: dict = Depends(get_current_user_payload)):
 	if not name:
 		raise HTTPException(status_code=400, detail='Missing name')
 	user_sub = payload.get('sub')
+	user_email = payload.get('email')
+	
 	try:
+		# Preparar dados do perfil
+		profile_data = {
+			'id': str(user_sub),
+			'name': name,
+			'email': user_email,
+			'updated_at': datetime.utcnow().isoformat()
+		}
+		
 		# usa service role key pelo supabase client configurado no backend
-		resp = supabase.table('profiles').upsert({'id': str(user_sub), 'name': name}).execute()
+		resp = supabase.table('profiles').upsert(profile_data).execute()
 		if getattr(resp, 'error', None):
 			raise Exception(resp.error)
 		return {'ok': True, 'profile': resp.data}
@@ -104,9 +136,21 @@ def sync_profile(body: dict, payload: dict = Depends(get_current_user_payload)):
 @router.post('/update-social-media')
 def update_social_media(body: UserSocialMediaUpdate, payload: dict = Depends(get_current_user_payload)):
 	user_id = payload.get('sub')
+	user_email = payload.get('email')
+	
 	try:
+		# Primeiro, garantir que o perfil existe
+		check_resp = supabase.table('profiles').select('id').eq('id', str(user_id)).execute()
+		profile_exists = check_resp and getattr(check_resp, 'data', None) and len(check_resp.data) > 0
+		
 		# Preparar dados para atualizar (apenas campos fornecidos)
-		update_data = {}
+		update_data = {'id': str(user_id)}
+		
+		if not profile_exists:
+			# Se perfil não existe, incluir campos obrigatórios
+			update_data['email'] = user_email
+			update_data['name'] = payload.get('name', 'Usuário')
+		
 		if body.instagram is not None:
 			update_data['instagram'] = body.instagram
 		if body.twitter is not None:
@@ -120,12 +164,14 @@ def update_social_media(body: UserSocialMediaUpdate, payload: dict = Depends(get
 		if body.phone is not None:
 			update_data['phone'] = body.phone
 		
-		if not update_data:
-			raise HTTPException(status_code=400, detail='Nenhum campo fornecido para atualizar')
-		
 		update_data['updated_at'] = datetime.utcnow().isoformat()
 		
-		resp = supabase.table('profiles').update(update_data).eq('id', str(user_id)).execute()
+		# Usar upsert para criar ou atualizar
+		if profile_exists:
+			resp = supabase.table('profiles').update(update_data).eq('id', str(user_id)).execute()
+		else:
+			resp = supabase.table('profiles').upsert(update_data).execute()
+			
 		if getattr(resp, 'error', None):
 			raise Exception(resp.error)
 		return {'ok': True, 'data': resp.data}

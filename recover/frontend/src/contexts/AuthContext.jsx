@@ -109,8 +109,25 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const reloadProfile = async () => {
+    const t = localStorage.getItem('recover_token');
+    if (!t) return;
+    try {
+      const u = await getUserProfile(t);
+      console.debug('[Auth] reloaded profile:', u);
+      setUser(u);
+      if (u && (u.email === 'admin@email.com' || u.role === 'admin')) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (e) {
+      console.debug('[Auth] reload profile failed', e);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAdmin, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, isAdmin, login, logout, loading, reloadProfile }}>
       {children}
     </AuthContext.Provider>
   );
